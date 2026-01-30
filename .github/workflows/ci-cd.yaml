@@ -30,7 +30,7 @@ jobs:
 
     - name: Run Unit Tests
       run: |
-        pytest app/test_app.py
+        pytest app/test_app.py --cov=app --cov-report=xml
 
     - name: SonarQube Scan
       uses: sonarsource/sonarqube-scan-action@master
