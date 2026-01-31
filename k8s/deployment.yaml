@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: flask-app
-        image: devsecops-app:latest # Replace with your Docker Hub image
+        image: YOUR_DOCKERHUB_USERNAME/devsecops-app:latest
         ports:
         - containerPort: 5000
         envFrom:
