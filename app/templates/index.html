@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevSecOps Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+        
+        .status-grid {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .status-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        
+        .status-label {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .status-value {
+            font-size: 20px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .status-healthy {
+            color: #10b981;
+        }
+        
+        .status-running {
+            color: #3b82f6;
+        }
+        
+        .status-unavailable {
+            color: #ef4444;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ app_name }}</h1>
+        
+        <div class="status-grid">
+            <div class="status-item">
+                <div class="status-label">Environment</div>
+                <div class="status-value">{{ environment }}</div>
+            </div>
+            
+            <div class="status-item">
+                <div class="status-label">Application Status</div>
+                <div class="status-value status-running">{{ app_status }}</div>
+            </div>
+            
+            <div class="status-item">
+                <div class="status-label">Health Check</div>
+                <div class="status-value {% if health_status == 'healthy' %}status-healthy{% else %}status-unavailable{% endif %}">
+                    {{ health_status }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            DevSecOps CI/CD Pipeline Project
+        </div>
+    </div>
+</body>
+</html>
