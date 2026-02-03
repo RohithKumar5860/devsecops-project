@@ -4,6 +4,8 @@ metadata:
   name: devsecops-app
   labels:
     app: devsecops-app
+    version: v1.0.0
+    tier: backend
 spec:
   replicas: 3
   selector:
@@ -13,36 +15,56 @@ spec:
     metadata:
       labels:
         app: devsecops-app
+        version: v1.0.0
+        tier: backend
     spec:
       containers:
       - name: flask-app
-        image: YOUR_DOCKERHUB_USERNAME/devsecops-app:latest
+        image: your-dockerhub-username/devsecops-app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
-        envFrom:
-        - configMapRef:
-            name: app-config
-        - secretRef:
-            name: app-secrets
+          name: http
+          protocol: TCP
+        env:
+        - name: APP_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: APP_ENV
+        - name: PORT
+          value: "5000"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
         livenessProbe:
           httpGet:
             path: /health
             port: 5000
-          initialDelaySeconds: 10
+          initialDelaySeconds: 30
           periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /health
             port: 5000
-          initialDelaySeconds: 5
+          initialDelaySeconds: 10
           periodSeconds: 5
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "250m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
+          timeoutSeconds: 3
+          failureThreshold: 3
         securityContext:
           runAsNonRoot: true
-          runAsUser: 1000
+          runAsUser: 1001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+            - ALL
+      restartPolicy: Always
+      securityContext:
+        fsGroup: 1001
