@@ -1,12 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: devsecops-service
+  name: devsecops-app-service
+  labels:
+    app: devsecops-app
 spec:
+  type: LoadBalancer
   selector:
     app: devsecops-app
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 5000
-  type: ClusterIP
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+    name: http
+  sessionAffinity: None
