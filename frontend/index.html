@@ -15,14 +15,14 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1 class="title">DevSecOps Application</h1>
-            <p class="subtitle">Secure CI/CD Pipeline Dashboard</p>
+            <h1 class="title">DevSecOps Project Dashboard</h1>
+            <p class="subtitle">Complete Project Overview</p>
         </header>
 
         <main class="main-content">
             <div class="cards-grid">
-                <!-- Application Info Card -->
-                <div class="card">
+                <!-- Project Overview Card -->
+                <div class="card card-wide">
                     <div class="card-header">
                         <div class="icon-wrapper">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -30,45 +30,25 @@
                                 <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
                             </svg>
                         </div>
-                        <h2 class="card-title">Application Info</h2>
+                        <h2 class="card-title">Project Overview</h2>
                     </div>
                     <div class="card-content">
-                        <div class="info-row">
-                            <span class="info-label">Name:</span>
-                            <span class="info-value" id="app-name">Loading...</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Version:</span>
-                            <span class="info-value" id="app-version">Loading...</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Environment:</span>
-                            <span class="badge" id="app-environment">Loading...</span>
+                        <h3 class="project-name" id="app-name">Loading...</h3>
+                        <p class="project-description" id="app-description">Loading project description...</p>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <span class="info-label">Version:</span>
+                                <span class="info-value" id="app-version">Loading...</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Environment:</span>
+                                <span class="badge" id="app-environment">Loading...</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Application Status Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="icon-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M12 6v6l4 2"></path>
-                            </svg>
-                        </div>
-                        <h2 class="card-title">Application Status</h2>
-                    </div>
-                    <div class="card-content">
-                        <div class="status-indicator">
-                            <div class="status-dot" id="status-dot"></div>
-                            <span class="status-text" id="app-status">Checking...</span>
-                        </div>
-                        <p class="status-message" id="status-message">Connecting to backend...</p>
-                    </div>
-                </div>
-
-                <!-- Health Check Card -->
+                <!-- System Status Card -->
                 <div class="card">
                     <div class="card-header">
                         <div class="icon-wrapper">
@@ -76,44 +56,56 @@
                                 <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                             </svg>
                         </div>
-                        <h2 class="card-title">Health Check</h2>
+                        <h2 class="card-title">System Status</h2>
                     </div>
                     <div class="card-content">
                         <div class="status-indicator">
-                            <div class="status-dot" id="health-dot"></div>
-                            <span class="status-text" id="health-status">Checking...</span>
+                            <div class="status-dot" id="status-dot"></div>
+                            <span class="status-text" id="status-text">Checking...</span>
                         </div>
-                        <p class="status-message" id="health-message">Running diagnostics...</p>
+                        <p class="status-message" id="status-message">Connecting to backend...</p>
                     </div>
                 </div>
 
-                <!-- Security Info Card -->
-                <div class="card">
+                <!-- DevSecOps Components Card -->
+                <div class="card card-wide">
                     <div class="card-header">
                         <div class="icon-wrapper">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                             </svg>
                         </div>
-                        <h2 class="card-title">Security Features</h2>
+                        <h2 class="card-title">DevSecOps Components</h2>
                     </div>
                     <div class="card-content">
-                        <ul class="feature-list">
-                            <li class="feature-item">
-                                <span class="check-icon">✓</span>
-                                Multi-stage Docker Build
+                        <ul class="components-list" id="components-list">
+                            <li class="component-item">
+                                <div class="component-header">
+                                    <span class="component-name">Loading...</span>
+                                </div>
                             </li>
-                            <li class="feature-item">
-                                <span class="check-icon">✓</span>
-                                Trivy Vulnerability Scanning
-                            </li>
-                            <li class="feature-item">
-                                <span class="check-icon">✓</span>
-                                Non-root Container User
-                            </li>
-                            <li class="feature-item">
-                                <span class="check-icon">✓</span>
-                                Automated CI/CD Pipeline
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Available Endpoints Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="icon-wrapper">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 16v-4M12 8h.01"></path>
+                            </svg>
+                        </div>
+                        <h2 class="card-title">Available Endpoints</h2>
+                    </div>
+                    <div class="card-content">
+                        <ul class="endpoints-list" id="endpoints-list">
+                            <li class="endpoint-item">
+                                <div class="endpoint-header">
+                                    <span class="endpoint-method">GET</span>
+                                    <span class="endpoint-path">Loading...</span>
+                                </div>
                             </li>
                         </ul>
                     </div>

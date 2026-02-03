@@ -53,6 +53,76 @@ def api_info():
     }), 200
 
 
+@app.route('/api/project', methods=['GET'])
+def project_overview():
+    """
+    Aggregated project information endpoint
+    Returns all project data in a single response
+    """
+    return jsonify({
+        'metadata': {
+            'name': APP_NAME,
+            'description': 'A production-ready DevSecOps project demonstrating modern CI/CD automation, shift-left security practices, Docker containerization, and Kubernetes-ready deployment',
+            'version': VERSION,
+            'environment': APP_ENV
+        },
+        'status': {
+            'application': 'running',
+            'health': 'healthy',
+            'message': 'All systems operational'
+        },
+        'devsecops_components': [
+            {
+                'name': 'CI/CD Pipeline',
+                'description': 'GitHub Actions workflow with automated testing and deployment',
+                'status': 'active'
+            },
+            {
+                'name': 'Docker',
+                'description': 'Multi-stage containerization with security best practices',
+                'status': 'active'
+            },
+            {
+                'name': 'Trivy Scanner',
+                'description': 'Container vulnerability scanning for CVE detection',
+                'status': 'active'
+            },
+            {
+                'name': 'SonarCloud',
+                'description': 'Code quality and security analysis (optional)',
+                'status': 'configured'
+            },
+            {
+                'name': 'Kubernetes',
+                'description': 'Container orchestration with HPA and security contexts',
+                'status': 'ready'
+            }
+        ],
+        'endpoints': [
+            {
+                'path': '/ui',
+                'description': 'Project dashboard (this page)',
+                'method': 'GET'
+            },
+            {
+                'path': '/api/project',
+                'description': 'Aggregated project information',
+                'method': 'GET'
+            },
+            {
+                'path': '/health',
+                'description': 'Health check endpoint',
+                'method': 'GET'
+            },
+            {
+                'path': '/api/info',
+                'description': 'Application information',
+                'method': 'GET'
+            }
+        ]
+    }), 200
+
+
 @app.route('/ui')
 def ui():
     """
