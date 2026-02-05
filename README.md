@@ -22,7 +22,7 @@ A production-ready DevSecOps project demonstrating modern CI/CD automation, shif
 
 This project showcases a complete DevSecOps implementation for a Flask-based web application. It demonstrates industry best practices for secure software development, automated testing, vulnerability scanning, containerization, and orchestration.
 
-The application features a clean separation between backend (Flask REST API) and frontend (vanilla HTML/CSS/JavaScript), emphasizing security-first development and automated deployment workflows.
+The application features a clean separation between backend (Flask REST API) and frontend (vanilla HTML/CSS/JavaScript with a modern white/light theme), emphasizing security-first development and automated deployment workflows.
 
 ## Architecture
 
@@ -308,7 +308,7 @@ wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-k
 echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
 sudo apt-get update
 sudo apt-get install trivy
-
+h
 # Scan image
 trivy image devsecops-app:latest
 ```
@@ -1164,29 +1164,66 @@ kubectl describe hpa devsecops-app-hpa
 
 ### Design Philosophy
 
-The frontend demonstrates a clean, modern interface suitable for production applications:
+The frontend demonstrates a clean, professional interface with modern web design principles:
 
-- **Professional Appearance**: Gradient backgrounds, card-based layout
-- **Subtle Animations**: Fade-in effects, hover transitions
-- **Responsive Design**: Works on desktop and mobile
-- **Accessibility**: Semantic HTML, proper contrast ratios
-- **Performance**: Vanilla JavaScript, no heavy frameworks
+- **Clean White/Light Theme**: Professional appearance with subtle shadows and borders
+- **Card-Based Layout**: Organized information display with clear visual hierarchy
+- **Subtle Animations**: Fade-in on page load, smooth hover effects, health status pulse indicators
+- **Modern Typography**: Inter font family for excellent readability
+- **Responsive Design**: Adapts seamlessly to desktop, tablet, and mobile devices
+- **Accessibility**: Semantic HTML5, proper ARIA labels, keyboard navigation support
+
+### Animation Features
+
+The UI includes professional, subtle animations:
+
+- **Page Load**: Smooth fade-in animation (0.5s) for initial render
+- **Card Entrance**: Staggered fade-in for each card (0.05s delay increments)
+- **Hover Effects**: Cards elevate 3px with enhanced shadow on hover
+- **Health Status**: 
+  - Green pulse animation when status is "healthy"
+  - Red pulse animation when status is "error"
+  - Smooth 2s animation cycle with expanding shadow effect
+
+### Frontend/Backend Separation
+
+The project maintains a clear separation between frontend and backend:
+
+**Why Separate?**
+- **Scalability**: Frontend and backend can be scaled independently
+- **Maintainability**: Clear boundaries make code easier to understand and modify
+- **Flexibility**: Frontend can be replaced or updated without touching backend logic
+- **Best Practice**: Industry-standard architecture for modern web applications
+
+**Frontend (`frontend/`)**: 
+- Pure static files (HTML, CSS, JavaScript)
+- Fetches data from backend APIs via JavaScript
+- No server-side rendering or templating
+- Can be served by any static file server or CDN
+
+**Backend (`backend/`)**: 
+- RESTful API providing JSON endpoints
+- Stateless design for horizontal scaling
+- Environment-based configuration
+- Serves frontend files via Flask's static file serving
 
 ### UI Features
 
-- Real-time application status
-- Health check monitoring
-- Environment information display
-- Security features showcase
-- Auto-refresh every 30 seconds
+- **Real-time Status**: Application status fetched from `/` endpoint
+- **Health Monitoring**: Health check data from `/health` endpoint
+- **Application Info**: Version, environment, and name from `/api/info` endpoint
+- **Auto-refresh**: Data updates every 30 seconds automatically
+- **Visual Indicators**: Color-coded badges for environment (production=red, staging=orange, development=green)
 
 ### Purpose
 
-The UI serves to:
-- Visually verify application deployment
-- Monitor service health
-- Demonstrate full-stack capabilities
-- Provide a professional user interface
+The UI serves multiple objectives:
+
+1. **Visual Verification**: Quickly confirm application is deployed and running
+2. **Health Monitoring**: Real-time health status with visual pulse indicators
+3. **Full-Stack Demonstration**: Shows ability to build complete applications
+4. **Professional Presentation**: Clean, modern interface suitable for production use
+
 
 ## Testing
 

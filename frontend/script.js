@@ -1,31 +1,18 @@
 /**
  * Frontend JavaScript for DevSecOps Dashboard
- * Fetches data from Flask backend API and updates UI
+ * Fetches all project data from a single aggregated endpoint
  */
 
 // Configuration
 const API_BASE_URL = window.location.origin;
 const REFRESH_INTERVAL = 30000; // 30 seconds
 
-// DOM Elements
-const elements = {
-    appName: document.getElementById('app-name'),
-    appVersion: document.getElementById('app-version'),
-    appEnvironment: document.getElementById('app-environment'),
-    appStatus: document.getElementById('app-status'),
-    statusMessage: document.getElementById('status-message'),
-    statusDot: document.getElementById('status-dot'),
-    healthStatus: document.getElementById('health-status'),
-    healthMessage: document.getElementById('health-message'),
-    healthDot: document.getElementById('health-dot')
-};
-
 /**
- * Fetch application information from /api/info endpoint
+ * Fetch all project data from /api/project endpoint
  */
-async function fetchAppInfo() {
+async function fetchProjectData() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/info`);
+        const response = await fetch(`${API_BASE_URL}/api/project`);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -33,134 +20,167 @@ async function fetchAppInfo() {
 
         const data = await response.json();
 
-        // Update UI with application info
-        elements.appName.textContent = data.app_name || 'Unknown';
-        elements.appVersion.textContent = data.version || 'N/A';
-        elements.appEnvironment.textContent = data.environment || 'Unknown';
+        // Update all UI sections with the fetched data
+        updateMetadata(data.metadata);
+        updateStatus(data.status);
+        updateDevSecOpsComponents(data.devsecops_components);
+        updateEndpoints(data.endpoints);
 
-        // Style environment badge based on environment type
-        styleEnvironmentBadge(data.environment);
-
+        console.log('Project data fetched successfully');
         return data;
     } catch (error) {
-        console.error('Error fetching app info:', error);
-        elements.appName.textContent = 'Error loading data';
-        elements.appVersion.textContent = 'N/A';
-        elements.appEnvironment.textContent = 'Unknown';
+        console.error('Error fetching project data:', error);
+        showError();
         throw error;
     }
 }
 
 /**
- * Fetch application status from / endpoint
+ * Update metadata section
  */
-async function fetchAppStatus() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/`);
+function updateMetadata(metadata) {
+    const appName = document.getElementById('app-name');
+    const appDescription = document.getElementById('app-description');
+    const appVersion = document.getElementById('app-version');
+    const appEnvironment = document.getElementById('app-environment');
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        // Update status UI
-        if (data.status === 'running') {
-            elements.appStatus.textContent = 'Running';
-            elements.statusMessage.textContent = data.message || 'Application is operational';
-            elements.statusDot.classList.add('healthy');
-            elements.statusDot.classList.remove('error');
-        } else {
-            elements.appStatus.textContent = 'Unknown';
-            elements.statusMessage.textContent = 'Status unclear';
-            elements.statusDot.classList.remove('healthy', 'error');
-        }
-
-        return data;
-    } catch (error) {
-        console.error('Error fetching app status:', error);
-        elements.appStatus.textContent = 'Error';
-        elements.statusMessage.textContent = 'Unable to connect to backend';
-        elements.statusDot.classList.add('error');
-        elements.statusDot.classList.remove('healthy');
-        throw error;
+    if (appName) appName.textContent = metadata.name || 'Unknown';
+    if (appDescription) appDescription.textContent = metadata.description || 'No description available';
+    if (appVersion) appVersion.textContent = metadata.version || 'N/A';
+    if (appEnvironment) {
+        appEnvironment.textContent = metadata.environment || 'Unknown';
+        styleEnvironmentBadge(metadata.environment);
     }
 }
 
 /**
- * Fetch health check from /health endpoint
+ * Update status section (combined application + health)
  */
-async function fetchHealthCheck() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/health`);
+function updateStatus(status) {
+    const statusText = document.getElementById('status-text');
+    const statusMessage = document.getElementById('status-message');
+    const statusDot = document.getElementById('status-dot');
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+    if (status.application === 'running' && status.health === 'healthy') {
+        if (statusText) statusText.textContent = 'Operational';
+        if (statusMessage) statusMessage.textContent = status.message || 'All systems running';
+        if (statusDot) {
+            statusDot.classList.add('healthy');
+            statusDot.classList.remove('error');
         }
-
-        const data = await response.json();
-
-        // Update health UI
-        if (data.status === 'healthy') {
-            elements.healthStatus.textContent = 'Healthy';
-            elements.healthMessage.textContent = `Service: ${data.service || 'Unknown'}`;
-            elements.healthDot.classList.add('healthy');
-            elements.healthDot.classList.remove('error');
-        } else {
-            elements.healthStatus.textContent = 'Unhealthy';
-            elements.healthMessage.textContent = 'Service health check failed';
-            elements.healthDot.classList.add('error');
-            elements.healthDot.classList.remove('healthy');
+    } else {
+        if (statusText) statusText.textContent = 'Degraded';
+        if (statusMessage) statusMessage.textContent = 'System experiencing issues';
+        if (statusDot) {
+            statusDot.classList.add('error');
+            statusDot.classList.remove('healthy');
         }
-
-        return data;
-    } catch (error) {
-        console.error('Error fetching health check:', error);
-        elements.healthStatus.textContent = 'Error';
-        elements.healthMessage.textContent = 'Health check unavailable';
-        elements.healthDot.classList.add('error');
-        elements.healthDot.classList.remove('healthy');
-        throw error;
     }
+}
+
+/**
+ * Update DevSecOps components list
+ */
+function updateDevSecOpsComponents(components) {
+    const componentsList = document.getElementById('components-list');
+
+    if (!componentsList || !components) return;
+
+    componentsList.innerHTML = '';
+
+    components.forEach(component => {
+        const li = document.createElement('li');
+        li.className = 'component-item';
+
+        const statusBadge = getStatusBadge(component.status);
+
+        li.innerHTML = `
+            <div class="component-header">
+                <span class="component-name">${component.name}</span>
+                <span class="component-status ${statusBadge.class}">${statusBadge.text}</span>
+            </div>
+            <p class="component-description">${component.description}</p>
+        `;
+
+        componentsList.appendChild(li);
+    });
+}
+
+/**
+ * Update endpoints list
+ */
+function updateEndpoints(endpoints) {
+    const endpointsList = document.getElementById('endpoints-list');
+
+    if (!endpointsList || !endpoints) return;
+
+    endpointsList.innerHTML = '';
+
+    endpoints.forEach(endpoint => {
+        const li = document.createElement('li');
+        li.className = 'endpoint-item';
+
+        const fullUrl = `${API_BASE_URL}${endpoint.path}`;
+
+        li.innerHTML = `
+            <div class="endpoint-header">
+                <span class="endpoint-method">${endpoint.method}</span>
+                <a href="${fullUrl}" class="endpoint-path" target="_blank">${endpoint.path}</a>
+            </div>
+            <p class="endpoint-description">${endpoint.description}</p>
+        `;
+
+        endpointsList.appendChild(li);
+    });
+}
+
+/**
+ * Get status badge configuration
+ */
+function getStatusBadge(status) {
+    const badges = {
+        'active': { text: 'Active', class: 'status-active' },
+        'ready': { text: 'Ready', class: 'status-ready' },
+        'configured': { text: 'Configured', class: 'status-configured' },
+        'inactive': { text: 'Inactive', class: 'status-inactive' }
+    };
+
+    return badges[status] || { text: status, class: 'status-default' };
 }
 
 /**
  * Style environment badge based on environment type
  */
 function styleEnvironmentBadge(environment) {
-    const badge = elements.appEnvironment;
+    const badge = document.getElementById('app-environment');
 
-    // Remove existing environment classes
-    badge.classList.remove('env-production', 'env-staging', 'env-development');
+    if (!badge || !environment) return;
 
-    // Add appropriate class based on environment
-    if (environment) {
-        const env = environment.toLowerCase();
-        if (env === 'production') {
-            badge.style.background = '#ef4444'; // Red
-        } else if (env === 'staging') {
-            badge.style.background = '#f59e0b'; // Orange
-        } else if (env === 'development') {
-            badge.style.background = '#10b981'; // Green
-        } else {
-            badge.style.background = '#4f46e5'; // Default blue
-        }
+    const env = environment.toLowerCase();
+    if (env === 'production') {
+        badge.style.background = '#ef4444'; // Red
+    } else if (env === 'staging') {
+        badge.style.background = '#f59e0b'; // Orange
+    } else if (env === 'development') {
+        badge.style.background = '#10b981'; // Green
+    } else {
+        badge.style.background = '#4f46e5'; // Default blue
     }
 }
 
 /**
- * Fetch all data from backend
+ * Show error state
  */
-async function fetchAllData() {
-    try {
-        await Promise.all([
-            fetchAppInfo(),
-            fetchAppStatus(),
-            fetchHealthCheck()
-        ]);
-        console.log('All data fetched successfully');
-    } catch (error) {
-        console.error('Error fetching data:', error);
+function showError() {
+    const statusText = document.getElementById('status-text');
+    const statusMessage = document.getElementById('status-message');
+    const statusDot = document.getElementById('status-dot');
+
+    if (statusText) statusText.textContent = 'Error';
+    if (statusMessage) statusMessage.textContent = 'Unable to connect to backend';
+    if (statusDot) {
+        statusDot.classList.add('error');
+        statusDot.classList.remove('healthy');
     }
 }
 
@@ -171,10 +191,10 @@ function initDashboard() {
     console.log('Initializing DevSecOps Dashboard...');
 
     // Fetch data immediately on load
-    fetchAllData();
+    fetchProjectData();
 
     // Set up periodic refresh
-    setInterval(fetchAllData, REFRESH_INTERVAL);
+    setInterval(fetchProjectData, REFRESH_INTERVAL);
 
     console.log(`Dashboard initialized. Auto-refresh every ${REFRESH_INTERVAL / 1000} seconds.`);
 }
