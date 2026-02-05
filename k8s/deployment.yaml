@@ -7,7 +7,7 @@ metadata:
     version: v1.0.0
     tier: backend
 spec:
-  replicas: 3
+  # replicas: NOT defined here - managed by HPA (hpa.yaml)
   selector:
     matchLabels:
       app: devsecops-app
@@ -19,8 +19,8 @@ spec:
         tier: backend
     spec:
       containers:
-      - name: flask-app
-        image: your-dockerhub-username/devsecops-app:latest
+      - name: devsecops-app
+        image: rohith0516/devsecops-app:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
