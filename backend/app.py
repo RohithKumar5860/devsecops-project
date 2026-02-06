@@ -4,7 +4,7 @@ Provides RESTful endpoints for application status and health checks
 """
 
 import os
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, render_template_string
 from flask.logging import create_logger
 
 app = Flask(__name__, static_folder='static', static_url_path='')
@@ -19,13 +19,21 @@ VERSION = '1.0.0'
 @app.route('/', methods=['GET'])
 def index():
     """
-    Root endpoint - returns application status
+    Root endpoint - serves the dashboard HTML page
     """
-    return jsonify({
-        'status': 'running',
-        'message': 'DevSecOps Flask API is operational',
-        'version': VERSION
-    }), 200
+    # Read and serve the frontend HTML file
+    frontend_path = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'index.html')
+    try:
+        with open(frontend_path, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        return html_content, 200
+    except FileNotFoundError:
+        # Fallback to JSON if HTML not found
+        return jsonify({
+            'status': 'running',
+            'message': 'DevSecOps Flask API is operational',
+            'version': VERSION
+        }), 200
 
 
 @app.route('/health', methods=['GET'])
@@ -126,9 +134,28 @@ def project_overview():
 @app.route('/ui')
 def ui():
     """
-    Serve the frontend dashboard
+    Serve the frontend dashboard (alternative route)
     """
-    return send_from_directory(app.static_folder, 'index.html')
+    return index()
+
+
+@app.route('/style.css')
+def serve_css():
+    """
+    Serve the CSS file from frontend directory
+    """
+    frontend_dir = os.path.join(os.path.dirname(__file__), '..', 'frontend')
+    return send_from_directory(frontend_dir, 'style.css')
+
+
+@app.route('/script.js')
+def serve_js():
+    """
+    Serve the JavaScript file from frontend directory
+    """
+    frontend_dir = os.path.join(os.path.dirname(__file__), '..', 'frontend')
+    return send_from_directory(frontend_dir, 'script.js')
+
 
 
 @app.errorhandler(404)
