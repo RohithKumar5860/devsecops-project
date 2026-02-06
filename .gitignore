@@ -56,3 +56,6 @@ Thumbs.db
 *.pem
 *.key
 secrets/
+
+# Deprecated/Unused code
+app/

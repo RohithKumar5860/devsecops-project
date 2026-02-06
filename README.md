@@ -22,31 +22,40 @@ A production-ready DevSecOps project demonstrating modern CI/CD automation, shif
 
 This project showcases a complete DevSecOps implementation for a Flask-based web application. It demonstrates industry best practices for secure software development, automated testing, vulnerability scanning, containerization, and orchestration.
 
-The application features a clean separation between backend (Flask REST API) and frontend (vanilla HTML/CSS/JavaScript with a modern white/light theme), emphasizing security-first development and automated deployment workflows.
+The application features an integrated backend and frontend, with a beautiful single-page dashboard served at the root URL. The backend provides both the HTML interface and RESTful API endpoints, using vanilla HTML/CSS/JavaScript with a modern, clean design. The architecture emphasizes security-first development and automated deployment workflows.
+
+**🚀 Quick Access:** Simply visit `http://localhost:5000/` after starting the application to see the complete DevSecOps dashboard with real-time project information.
 
 ## Architecture
 
-### Backend + Frontend Separation
+### Backend + Frontend Integration
 
-The project follows a clear separation of concerns:
+The project integrates backend and frontend for streamlined deployment:
 
-- **Backend (`backend/`)**: Pure Flask REST API providing JSON endpoints
-  - No HTML rendering
-  - Stateless design
+- **Backend (`backend/`)**: Flask application serving both HTML dashboard and REST API
+  - **Dashboard Route (`/`)**: Serves the complete single-page application
+  - **API Routes**: RESTful JSON endpoints for data (`/api/project`, `/health`, `/api/info`)
+  - **Static Files**: Serves CSS and JavaScript from frontend directory
   - Environment-based configuration
-  - RESTful architecture
+  - Stateless design for API endpoints
 
-- **Frontend (`frontend/`)**: Static web interface
-  - Vanilla HTML, CSS, and JavaScript
-  - Fetches data from backend APIs
-  - Modern, responsive design
-  - No framework dependencies
+- **Frontend (`frontend/`)**: Modern web interface files
+  - HTML5 semantic markup with responsive design
+  - CSS3 styling with animations and modern aesthetics
+  - Vanilla JavaScript for dynamic data fetching
+  - No framework dependencies - pure web standards
 
-This separation enables:
-- Independent scaling of frontend and backend
-- Clear API contracts
-- Easier testing and maintenance
-- Flexibility in deployment strategies
+**Integration Approach:**
+- Backend serves frontend files directly for simplified deployment
+- JavaScript fetches data from backend API endpoints
+- Clean separation between presentation (frontend files) and data (API endpoints)
+- Single container deployment with both UI and API
+
+This approach provides:
+- Simplified deployment (single application to run)
+- Clear separation between UI code and backend logic
+- Efficient development workflow
+- Production-ready containerization
 
 ## Project Structure
 
@@ -535,15 +544,20 @@ You should see output like:
 
 Open your web browser and navigate to:
 
-- **Frontend Dashboard**: http://localhost:5000/ui
-- **API Root**: http://localhost:5000/
+- **Dashboard (Main Page)**: http://localhost:5000/
+- **Dashboard (Alternative)**: http://localhost:5000/ui
+- **Project Data API**: http://localhost:5000/api/project
 - **Health Check**: http://localhost:5000/health
 - **API Info**: http://localhost:5000/api/info
 
 **Expected Result:**
-- You should see a beautiful dashboard with purple gradient header
-- Four cards displaying application info, status, health check, and security features
-- Green status indicators showing "Running" and "Healthy"
+- You should see a beautiful dashboard with a blue gradient header titled "DevSecOps Project Dashboard"
+- Four main cards:
+  - **Project Overview**: Application name, description, version, and environment
+  - **System Status**: Real-time operational status with animated indicator
+  - **DevSecOps Components**: CI/CD, Docker, SonarCloud, Kubernetes components
+  - **Available Endpoints**: List of all API endpoints
+- The dashboard automatically fetches data from `/api/project` and displays it with smooth animations
 
 #### Step 6: Run Tests (Optional)
 
@@ -678,7 +692,9 @@ docker run -it \
 
 #### Step 5: Access the Application
 
-- **Frontend Dashboard**: http://localhost:5000/ui
+- **Dashboard (Main Page)**: http://localhost:5000/
+- **Dashboard (Alternative)**: http://localhost:5000/ui
+- **Project Data API**: http://localhost:5000/api/project
 - **Health Check**: http://localhost:5000/health
 - **API Info**: http://localhost:5000/api/info
 

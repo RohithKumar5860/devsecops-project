@@ -19,15 +19,15 @@ def client():
 
 def test_index_endpoint(client):
     """
-    Test the root endpoint returns correct status
+    Test the root endpoint returns HTML dashboard
     """
     response = client.get('/')
     assert response.status_code == 200
     
-    data = json.loads(response.data)
-    assert data['status'] == 'running'
-    assert 'version' in data
-    assert 'message' in data
+    # The root endpoint now serves HTML, not JSON
+    assert response.content_type == 'text/html; charset=utf-8'
+    # Check that it contains HTML content
+    assert b'<!DOCTYPE html>' in response.data or b'<html' in response.data
 
 
 def test_health_endpoint(client):
@@ -70,9 +70,10 @@ def test_404_error(client):
 
 def test_response_content_type(client):
     """
-    Test that all endpoints return JSON
+    Test that API endpoints return JSON
     """
-    endpoints = ['/', '/health', '/api/info']
+    # Only test JSON endpoints (exclude / which serves HTML)
+    endpoints = ['/health', '/api/info']
     
     for endpoint in endpoints:
         response = client.get(endpoint)
