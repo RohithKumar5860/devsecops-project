@@ -82,7 +82,10 @@ devsecops-project/
 │   └── hpa.yaml              # Auto-scaling
 │
 ├── .github/workflows/          # CI/CD automation
-│   └── ci-cd.yaml            # GitHub Actions pipeline
+│   ├── ci-cd.yaml            # Main full pipeline
+│   ├── pr-check.yaml         # Fast PR validation
+│   ├── security-scan.yaml     # Dedicated security checks
+│   └── release.yaml          # Automated release on tags
 │
 ├── sonar-project.properties   # Code quality config
 ├── .gitignore                # Git exclusions
@@ -119,10 +122,11 @@ devsecops-project/
 - Clean, modern web interface
 
 ### DevSecOps Features
-- Automated CI/CD pipeline
+- **Advanced CI/CD with Multiple Specialized Pipelines**
 - Unit testing with coverage reporting
-- Static code analysis
-- Container vulnerability scanning
+- Static code analysis (SonarCloud)
+- Container vulnerability scanning (Trivy)
+- **Pipeline Metadata API (`/api/pipelines`)**
 - Multi-stage Docker builds
 - Non-root container execution
 - Kubernetes-ready deployment
@@ -421,31 +425,25 @@ docker login -u your-username
 
 The GitHub Actions workflow implements a comprehensive CI/CD pipeline:
 
-#### 1. Test Stage
-- Checkout code
-- Set up Python environment
-- Install dependencies (with caching)
-- Run pytest with coverage
-- Upload coverage reports
+#### 1. Main CI/CD Pipeline (`ci-cd.yaml`)
+- **Trigger**: Push to `main`/`develop`, Pull Request to `main`
+- **Jobs**: Test → Sonar → Build → Deploy
+- **Purpose**: Full end-to-end verification and deployment.
 
-#### 2. SonarCloud Analysis
-- Static code analysis
-- Security vulnerability detection
-- Code quality metrics
-- Technical debt assessment
-- Conditional execution (only if secrets configured)
+#### 2. PR Check Pipeline (`pr-check.yaml`)
+- **Trigger**: Every Pull Request to `main` or `develop`
+- **Jobs**: Lint (flake8) → Test (pytest)
+- **Purpose**: Fast feedback for developers on code style and logic.
 
-#### 3. Build & Scan Stage
-- Docker Buildx setup
-- Multi-stage image build
-- Trivy vulnerability scan
-- Fail on CRITICAL/HIGH vulnerabilities
-- Upload security results to GitHub
+#### 3. Security Scan Pipeline (`security-scan.yaml`)
+- **Trigger**: Push to `main`, Scheduled cron (Nightly)
+- **Jobs**: Trivy Container Scan → SonarCloud Scan
+- **Purpose**: Dedicated deep-security analysis and vulnerability monitoring.
 
-#### 4. Deploy Stage
-- Push image to Docker Hub
-- Kubernetes deployment (placeholder)
-- Only on main branch
+#### 4. Release Pipeline (`release.yaml`)
+- **Trigger**: Version tags (`v*.*.*`)
+- **Jobs**: Build & Push (tagged) → Deployment Notification
+- **Purpose**: Automated production staging of versioned Docker images.
 
 ### Pipeline Flow
 
@@ -546,6 +544,7 @@ Open your web browser and navigate to:
 
 - **Dashboard (Main Page)**: http://localhost:5000/
 - **Dashboard (Alternative)**: http://localhost:5000/ui
+- **Pipeline Metadata API**: http://localhost:5000/api/pipelines
 - **Project Data API**: http://localhost:5000/api/project
 - **Health Check**: http://localhost:5000/health
 - **API Info**: http://localhost:5000/api/info
@@ -580,8 +579,9 @@ test_app.py::test_health_endpoint PASSED
 test_app.py::test_api_info_endpoint PASSED
 test_app.py::test_404_error PASSED
 test_app.py::test_response_content_type PASSED
+test_app.py::test_pipelines_endpoint PASSED
 
-====== 5 passed in 0.XX s ======
+====== 6 passed in 0.XX s ======
 ```
 
 ### Troubleshooting Local Setup

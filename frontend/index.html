@@ -67,6 +67,39 @@
                     </div>
                 </div>
 
+                <!-- Test Results Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="icon-wrapper" style="background: linear-gradient(135deg, var(--success-color), #10b981);">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <h2 class="card-title">Automated Test Results</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <span class="info-label">Total Tests:</span>
+                                <span class="info-value" id="test-total">0</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Passed:</span>
+                                <span class="info-value" style="color: var(--success-color);" id="test-passed">0</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Failed:</span>
+                                <span class="info-value" id="test-failed">0</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Status:</span>
+                                <span class="badge" id="test-status" style="background: var(--success-color);">N/A</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- DevSecOps Components Card -->
                 <div class="card card-wide">
                     <div class="card-header">

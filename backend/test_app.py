@@ -78,3 +78,24 @@ def test_response_content_type(client):
     for endpoint in endpoints:
         response = client.get(endpoint)
         assert response.content_type == 'application/json'
+
+
+def test_pipelines_endpoint(client):
+    """
+    Test the pipelines listing endpoint returns all registered pipelines
+    """
+    response = client.get('/api/pipelines')
+    assert response.status_code == 200
+
+    data = json.loads(response.data)
+    assert 'pipelines' in data
+    assert 'total' in data
+    assert isinstance(data['pipelines'], list)
+    assert len(data['pipelines']) == data['total']
+
+    for pipeline in data['pipelines']:
+        assert 'name' in pipeline
+        assert 'file' in pipeline
+        assert 'triggers' in pipeline
+        assert 'jobs' in pipeline
+        assert 'description' in pipeline
