@@ -4,10 +4,9 @@ metadata:
   name: devsecops-app
   labels:
     app: devsecops-app
-    version: v1.0.0
     tier: backend
 spec:
-  # replicas: NOT defined here - managed by HPA (hpa.yaml)
+  # replicas: NOT defined here – managed entirely by HPA (hpa.yaml)
   selector:
     matchLabels:
       app: devsecops-app
@@ -15,7 +14,6 @@ spec:
     metadata:
       labels:
         app: devsecops-app
-        version: v1.0.0
         tier: backend
     spec:
       containers:
@@ -32,6 +30,16 @@ spec:
             configMapKeyRef:
               name: app-config
               key: APP_ENV
+        - name: DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DEBUG
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: LOG_LEVEL
         - name: PORT
           value: "5000"
         resources:

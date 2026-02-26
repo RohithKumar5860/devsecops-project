@@ -1,0 +1,31 @@
+# Dev deployment patch – lower resource limits, relaxed probes for fast iteration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devsecops-app
+spec:
+  template:
+    spec:
+      containers:
+      - name: devsecops-app
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 15
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 5

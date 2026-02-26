@@ -1,0 +1,8 @@
+# Dev HPA patch – minimal replicas to save local resources
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: devsecops-app-hpa
+spec:
+  minReplicas: 1
+  maxReplicas: 3

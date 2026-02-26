@@ -1,0 +1,31 @@
+# Staging deployment patch – mirrors production resource limits for accurate pre-prod testing
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devsecops-app
+spec:
+  template:
+    spec:
+      containers:
+      - name: devsecops-app
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 25
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 3

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  labels:
+    app: devsecops-app
+    environment: staging
+data:
+  APP_ENV: "staging"
+  APP_NAME: "DevSecOps Flask Application"
+  DEBUG: "False"
+  LOG_LEVEL: "INFO"
