@@ -79,13 +79,7 @@ cd backend
 python app.py
 ```
 
-Expected output:
-```
- * Serving Flask app 'app'
- * Debug mode: on
- * Running on http://127.0.0.1:5000
- * Running on http://0.0.0.0:5000
-```
+
 
 #### Step 5 — Open in Browser
 
