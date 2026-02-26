@@ -4,10 +4,10 @@ Provides RESTful endpoints for application status and health checks
 """
 
 import os
-from flask import Flask, jsonify, send_from_directory, render_template_string
+from flask import Flask, jsonify, send_from_directory
 from flask.logging import create_logger
 
-app = Flask(__name__, static_folder='static', static_url_path='')
+app = Flask(__name__)
 logger = create_logger(app)
 
 # Environment configuration
@@ -15,23 +15,27 @@ APP_ENV = os.getenv('APP_ENV', 'development')
 APP_NAME = 'DevSecOps Flask Application'
 VERSION = '1.0.0'
 
+# Resolve frontend directory relative to THIS file's absolute location,
+# so the app works regardless of which directory it is launched from.
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.normpath(os.path.join(_BASE_DIR, '..', 'frontend'))
+
 
 @app.route('/', methods=['GET'])
 def index():
     """
     Root endpoint - serves the dashboard HTML page
     """
-    # Read and serve the frontend HTML file
-    frontend_path = os.path.join(os.path.dirname(__file__), '..', 'frontend', 'index.html')
+    html_path = os.path.join(FRONTEND_DIR, 'index.html')
     try:
-        with open(frontend_path, 'r', encoding='utf-8') as f:
+        with open(html_path, 'r', encoding='utf-8') as f:
             html_content = f.read()
         return html_content, 200
     except FileNotFoundError:
-        # Fallback to JSON if HTML not found
+        logger.error('Frontend index.html not found at: %s', html_path)
         return jsonify({
             'status': 'running',
-            'message': 'DevSecOps Flask API is operational',
+            'message': 'DevSecOps Flask API is operational (UI not found)',
             'version': VERSION
         }), 200
 
@@ -147,8 +151,7 @@ def serve_css():
     """
     Serve the CSS file from frontend directory
     """
-    frontend_dir = os.path.join(os.path.dirname(__file__), '..', 'frontend')
-    return send_from_directory(frontend_dir, 'style.css')
+    return send_from_directory(FRONTEND_DIR, 'style.css')
 
 
 @app.route('/script.js')
@@ -156,8 +159,7 @@ def serve_js():
     """
     Serve the JavaScript file from frontend directory
     """
-    frontend_dir = os.path.join(os.path.dirname(__file__), '..', 'frontend')
-    return send_from_directory(frontend_dir, 'script.js')
+    return send_from_directory(FRONTEND_DIR, 'script.js')
 
 
 
