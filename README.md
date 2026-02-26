@@ -503,62 +503,43 @@ python3 -m venv venv
 
 # Activate virtual environment
 source venv/bin/activate
-
-# Verify activation (you should see (venv) in your prompt)
 ```
 
 #### Step 3: Install Dependencies
 
 ```bash
-# Install backend dependencies
 pip install -r backend/requirements.txt
-
-# Verify installation
-pip list
 ```
-
-Expected packages:
-- Flask==3.0.0
-- Werkzeug==3.0.1
-- pytest==7.4.3
-- pytest-cov==4.1.0
 
 #### Step 4: Run the Application
 
+**Option A – Terminal (Recommended):**
 ```bash
-# Navigate to backend directory
+# Always run from the backend/ directory
 cd backend
-
-# Start the Flask application
 python app.py
 ```
 
-You should see output like:
-```
- * Serving Flask app 'app'
- * Debug mode: on
- * Running on http://127.0.0.1:5000
-```
+**Option B – VS Code (One-Click Debug):**
+1. Open the project folder in VS Code
+2. Press **F5** or go to **Run → Start Debugging**
+3. Select **"Run Flask App"** from the dropdown
+
+> ⚠️ **Important**: Do NOT use the VS Code Run button (▶) directly on `app.py` without the launch config — it starts from the wrong directory and the dashboard won't load. Use **F5** with the provided launch config instead.
 
 #### Step 5: Access the Application
 
 Open your web browser and navigate to:
 
-- **Dashboard (Main Page)**: http://localhost:5000/
-- **Dashboard (Alternative)**: http://localhost:5000/ui
+- **Dashboard**: http://localhost:5000/
 - **Pipeline Metadata API**: http://localhost:5000/api/pipelines
 - **Project Data API**: http://localhost:5000/api/project
 - **Health Check**: http://localhost:5000/health
 - **API Info**: http://localhost:5000/api/info
 
 **Expected Result:**
-- You should see a beautiful dashboard with a blue gradient header titled "DevSecOps Project Dashboard"
-- Four main cards:
-  - **Project Overview**: Application name, description, version, and environment
-  - **System Status**: Real-time operational status with animated indicator
-  - **DevSecOps Components**: CI/CD, Docker, SonarCloud, Kubernetes components
-  - **Available Endpoints**: List of all API endpoints
-- The dashboard automatically fetches data from `/api/project` and displays it with smooth animations
+- You should see a beautiful dashboard with a blue gradient header
+- Cards showing: **Project Overview**, **System Status**, **Test Results** (6 passed), **DevSecOps Components**, and **Available Endpoints**
 
 #### Step 6: Run Tests (Optional)
 
