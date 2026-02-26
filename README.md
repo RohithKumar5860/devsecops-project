@@ -322,9 +322,11 @@ echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main"
 sudo apt-get update
 sudo apt-get install trivy
 h
+sudo apt-get update
+sudo apt-get install trivy
+
 # Scan image
-trivy image devsecops-app:latest
-```
+trivy image your-image-name
 
 #### SonarCloud Scan Locally
 
