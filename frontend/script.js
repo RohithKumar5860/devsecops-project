@@ -76,6 +76,32 @@ function updateStatus(status) {
             statusDot.classList.remove('healthy');
         }
     }
+
+    // Update test results if present
+    if (status.test_results) {
+        updateTestResults(status.test_results);
+    }
+}
+
+/**
+ * Update Automated Test Results section
+ */
+function updateTestResults(results) {
+    const total = document.getElementById('test-total');
+    const passed = document.getElementById('test-passed');
+    const failed = document.getElementById('test-failed');
+    const status = document.getElementById('test-status');
+
+    if (total) total.textContent = results.total || '0';
+    if (passed) passed.textContent = results.passed || '0';
+    if (failed) {
+        failed.textContent = results.failed || '0';
+        failed.style.color = results.failed > 0 ? 'var(--error-color)' : 'var(--text-primary)';
+    }
+    if (status) {
+        status.textContent = results.status ? results.status.toUpperCase() : 'UNKNOWN';
+        status.style.background = results.status === 'passed' ? 'var(--success-color)' : 'var(--error-color)';
+    }
 }
 
 /**

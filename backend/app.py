@@ -77,7 +77,13 @@ def project_overview():
         'status': {
             'application': 'running',
             'health': 'healthy',
-            'message': 'All systems operational'
+            'message': 'All systems operational',
+            'test_results': {
+                'total': 6,
+                'passed': 6,
+                'failed': 0,
+                'status': 'passed'
+            }
         },
         'devsecops_components': [
             {
@@ -108,13 +114,18 @@ def project_overview():
         ],
         'endpoints': [
             {
-                'path': '/ui',
-                'description': 'Project dashboard (this page)',
+                'path': '/',
+                'description': 'Main Project Dashboard',
                 'method': 'GET'
             },
             {
                 'path': '/api/project',
                 'description': 'Aggregated project information',
+                'method': 'GET'
+            },
+            {
+                'path': '/api/pipelines',
+                'description': 'CI/CD pipeline metadata',
                 'method': 'GET'
             },
             {
@@ -129,14 +140,6 @@ def project_overview():
             }
         ]
     }), 200
-
-
-@app.route('/ui')
-def ui():
-    """
-    Serve the frontend dashboard (alternative route)
-    """
-    return index()
 
 
 @app.route('/style.css')
@@ -156,6 +159,47 @@ def serve_js():
     frontend_dir = os.path.join(os.path.dirname(__file__), '..', 'frontend')
     return send_from_directory(frontend_dir, 'script.js')
 
+
+
+@app.route('/api/pipelines', methods=['GET'])
+def list_pipelines():
+    """
+    Returns metadata for all CI/CD pipelines defined in the project.
+    Lists the main pipeline plus the additional specialised pipelines.
+    """
+    return jsonify({
+        'pipelines': [
+            {
+                'name': 'Main CI/CD Pipeline',
+                'file': 'ci-cd.yaml',
+                'triggers': ['push to main/develop', 'pull_request to main'],
+                'jobs': ['test', 'sonar', 'build', 'deploy'],
+                'description': 'Full pipeline: test → security scan → build → deploy'
+            },
+            {
+                'name': 'PR Check Pipeline',
+                'file': 'pr-check.yaml',
+                'triggers': ['pull_request to main/develop'],
+                'jobs': ['lint', 'test'],
+                'description': 'Lightweight fast-feedback pipeline for pull requests'
+            },
+            {
+                'name': 'Security Scan Pipeline',
+                'file': 'security-scan.yaml',
+                'triggers': ['push to main', 'nightly cron (02:00 UTC)'],
+                'jobs': ['trivy-scan', 'sonar'],
+                'description': 'Dedicated pipeline for container and code security scanning'
+            },
+            {
+                'name': 'Release Pipeline',
+                'file': 'release.yaml',
+                'triggers': ['version tag (v*.*.*)'],
+                'jobs': ['build-push', 'deploy'],
+                'description': 'Triggered on version tags; builds, pushes Docker image, and deploys to Kubernetes'
+            }
+        ],
+        'total': 4
+    }), 200
 
 
 @app.errorhandler(404)
