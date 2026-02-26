@@ -1,0 +1,8 @@
+# Staging HPA patch – modest scale-out range, mirrors production behaviour
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: devsecops-app-hpa
+spec:
+  minReplicas: 2
+  maxReplicas: 5

@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# ── Staging Overlay ────────────────────────────────────────────────────────
+# Deploys the application into the 'staging' namespace with:
+#   - DEBUG=False, LOG_LEVEL=INFO  (production-like)
+#   - Production-equivalent resource limits
+#   - Standard liveness/readiness probes
+#   - HPA min=2, max=5
+
+namespace: staging
+
+resources:
+  - namespace.yaml
+  - ../../base
+  - configmap.yaml
+  - secret.yaml
+
+
+patches:
+  - path: deployment-patch.yaml
+    target:
+      kind: Deployment
+      name: devsecops-app
+  - path: hpa-patch.yaml
+    target:
+      kind: HorizontalPodAutoscaler
+      name: devsecops-app-hpa
+
+images:
+  - name: rohith0516/devsecops-app
+    newTag: latest

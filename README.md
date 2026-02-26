@@ -1,1293 +1,760 @@
 # Secure CI/CD Pipeline for a Cloud-Native Flask Application
 
-A production-ready DevSecOps project demonstrating modern CI/CD automation, shift-left security practices, Docker containerization, and Kubernetes-ready deployment with a clean, professional UI.
+> **Production-ready DevSecOps project** with multi-environment Kubernetes deployment (dev / staging / prod), shift-left security gates, Docker containerisation, Kustomize overlays, and automated CI/CD promotion via GitHub Actions.
+
+---
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Architecture](#architecture)
+- [🚀 How to Run the Project (Complete Guide)](#-how-to-run-the-project-complete-guide)
+- [Multi-Environment Architecture](#multi-environment-architecture)
 - [Project Structure](#project-structure)
 - [Technology Stack](#technology-stack)
-- [Features](#features)
-- [Security Strategy](#security-strategy)
+- [Security Enforcement](#security-enforcement)
 - [CI/CD Pipeline](#cicd-pipeline)
-- [Getting Started](#getting-started)
-- [Docker Deployment](#docker-deployment)
-- [Kubernetes Deployment](#kubernetes-deployment)
-- [UI Overview](#ui-overview)
+- [Environment Variable Reference](#environment-variable-reference)
 - [Testing](#testing)
 - [Future Improvements](#future-improvements)
 
+---
+
 ## Overview
 
-This project showcases a complete DevSecOps implementation for a Flask-based web application. It demonstrates industry best practices for secure software development, automated testing, vulnerability scanning, containerization, and orchestration.
+This project showcases a complete **DevSecOps implementation** for a Flask-based web application. It demonstrates industry best practices for secure software development, automated testing, multi-layer vulnerability scanning, containerisation, and multi-environment Kubernetes orchestration.
 
-The application features an integrated backend and frontend, with a beautiful single-page dashboard served at the root URL. The backend provides both the HTML interface and RESTful API endpoints, using vanilla HTML/CSS/JavaScript with a modern, clean design. The architecture emphasizes security-first development and automated deployment workflows.
+The architecture follows a **security-first, shift-left** philosophy: every code change passes through multiple automated security gates before any deployment is allowed to proceed. Deployments are promoted progressively through isolated Kubernetes namespaces — `dev` → `staging` → `prod`.
 
-**🚀 Quick Access:** Simply visit `http://localhost:5000/` after starting the application to see the complete DevSecOps dashboard with real-time project information.
+---
 
-## Architecture
+## 🚀 How to Run the Project (Complete Guide)
 
-### Backend + Frontend Integration
+This section covers **every method** to run the project locally — from a simple Python run to full Kubernetes multi-environment deployment.
 
-The project integrates backend and frontend for streamlined deployment:
+---
 
-- **Backend (`backend/`)**: Flask application serving both HTML dashboard and REST API
-  - **Dashboard Route (`/`)**: Serves the complete single-page application
-  - **API Routes**: RESTful JSON endpoints for data (`/api/project`, `/health`, `/api/info`)
-  - **Static Files**: Serves CSS and JavaScript from frontend directory
-  - Environment-based configuration
-  - Stateless design for API endpoints
+### ▶ Method 1 — Run with Python (Fastest, No Docker Required)
 
-- **Frontend (`frontend/`)**: Modern web interface files
-  - HTML5 semantic markup with responsive design
-  - CSS3 styling with animations and modern aesthetics
-  - Vanilla JavaScript for dynamic data fetching
-  - No framework dependencies - pure web standards
+Use this to get the app running in under 30 seconds.
 
-**Integration Approach:**
-- Backend serves frontend files directly for simplified deployment
-- JavaScript fetches data from backend API endpoints
-- Clean separation between presentation (frontend files) and data (API endpoints)
-- Single container deployment with both UI and API
+#### Prerequisites
+- Python 3.9 or higher installed — verify with `python --version`
+- Git installed — verify with `git --version`
 
-This approach provides:
-- Simplified deployment (single application to run)
-- Clear separation between UI code and backend logic
-- Efficient development workflow
-- Production-ready containerization
-
-## Project Structure
-
-```
-devsecops-project/
-├── backend/                    # Flask REST API
-│   ├── app.py                 # Main application
-│   ├── requirements.txt       # Python dependencies
-│   └── test_app.py           # Unit tests
-│
-├── frontend/                   # Static web interface
-│   ├── index.html            # Main HTML page
-│   ├── style.css             # Styling and animations
-│   └── script.js             # API integration logic
-│
-├── docker/                     # Container configuration
-│   └── Dockerfile            # Multi-stage build
-│
-├── k8s/                        # Kubernetes manifests
-│   ├── deployment.yaml       # Pod deployment
-│   ├── service.yaml          # Service exposure
-│   ├── configmap.yaml        # Configuration
-│   ├── secret.yaml           # Secrets template
-│   └── hpa.yaml              # Auto-scaling
-│
-├── .github/workflows/          # CI/CD automation
-│   ├── ci-cd.yaml            # Main full pipeline
-│   ├── pr-check.yaml         # Fast PR validation
-│   ├── security-scan.yaml     # Dedicated security checks
-│   └── release.yaml          # Automated release on tags
-│
-├── sonar-project.properties   # Code quality config
-├── .gitignore                # Git exclusions
-└── README.md                 # This file
-```
-
-## Technology Stack
-
-### Backend
-- **Python 3.9+**: Modern, secure Python runtime
-- **Flask 3.0**: Lightweight web framework
-- **Pytest**: Unit testing framework
-
-### Frontend
-- **HTML5**: Semantic markup
-- **CSS3**: Modern styling with animations
-- **Vanilla JavaScript**: No framework dependencies
-
-### DevSecOps Tools
-- **Git & GitHub**: Version control
-- **GitHub Actions**: CI/CD automation
-- **Docker**: Containerization
-- **Trivy**: Vulnerability scanning
-- **SonarCloud**: Code quality analysis
-- **Kubernetes**: Container orchestration
-
-## Features
-
-### Application Features
-- RESTful API endpoints for status and health checks
-- Environment-based configuration
-- Comprehensive error handling
-- Health monitoring endpoints
-- Clean, modern web interface
-
-### DevSecOps Features
-- **Advanced CI/CD with Multiple Specialized Pipelines**
-- Unit testing with coverage reporting
-- Static code analysis (SonarCloud)
-- Container vulnerability scanning (Trivy)
-- **Pipeline Metadata API (`/api/pipelines`)**
-- Multi-stage Docker builds
-- Non-root container execution
-- Kubernetes-ready deployment
-- Horizontal pod autoscaling
-- Security context enforcement
-
-## Security Strategy
-
-### Shift-Left Security
-
-Security is integrated throughout the development lifecycle:
-
-1. **Code Quality**: SonarCloud analyzes code for bugs, vulnerabilities, and code smells
-2. **Dependency Scanning**: Automated checks for vulnerable dependencies
-3. **Container Scanning**: Trivy scans Docker images for CVEs
-4. **Secure Defaults**: Non-root users, minimal base images
-5. **Secret Management**: Kubernetes secrets for sensitive data
-6. **Security Contexts**: Pod and container security policies
-
-### Docker Security
-
-- **Multi-stage builds**: Smaller attack surface
-- **Minimal base image**: `python:3.9-slim`
-- **Non-root user**: Application runs as UID 1001
-- **No hardcoded secrets**: Environment-based configuration
-- **Layer optimization**: Efficient caching and minimal layers
-
-### Kubernetes Security
-
-- **Security contexts**: `runAsNonRoot`, `readOnlyRootFilesystem`
-- **Resource limits**: CPU and memory constraints
-- **Health probes**: Liveness and readiness checks
-- **Network policies**: (Future enhancement)
-- **RBAC**: (Future enhancement)
-
-## CI/CD Pipeline Execution
-
-### GitHub Actions Setup
-
-The project includes a complete CI/CD pipeline that automates testing, security scanning, Docker builds, and deployment.
-
-#### Step 1: Push Code to GitHub
+#### Step 1 — Clone the Repository
 
 ```bash
-# Initialize git repository (if not already done)
-git init
-
-# Add all files
-git add .
-
-# Commit
-git commit -m "Initial commit: DevSecOps Flask Application"
-
-# Add remote repository
-git remote add origin https://github.com/your-username/devsecops-project.git
-
-# Push to GitHub
-git push -u origin main
-```
-
-#### Step 2: Configure GitHub Secrets
-
-Navigate to your GitHub repository → Settings → Secrets and variables → Actions
-
-Add the following secrets:
-
-**Required Secrets:**
-
-1. **DOCKERHUB_USERNAME**
-   - Your Docker Hub username
-   - Example: `johndoe`
-
-2. **DOCKERHUB_TOKEN**
-   - Docker Hub access token (not password)
-   - Create at: https://hub.docker.com/settings/security
-   - Click "New Access Token"
-
-**Optional Secrets (for SonarCloud):**
-
-3. **SONAR_TOKEN**
-   - SonarCloud authentication token
-   - Create at: https://sonarcloud.io/account/security
-   - Only needed if using SonarCloud
-
-4. **GITHUB_TOKEN**
-   - Automatically provided by GitHub Actions
-   - No manual configuration needed
-
-#### Step 3: Update SonarCloud Configuration (Optional)
-
-If using SonarCloud, update `sonar-project.properties`:
-
-```properties
-sonar.projectKey=your-github-username_devsecops-project
-sonar.organization=your-sonarcloud-organization
-```
-
-Create organization at: https://sonarcloud.io/
-
-#### Step 4: Trigger the Pipeline
-
-The pipeline runs automatically on:
-- Push to `main` or `develop` branches
-- Pull requests to `main` branch
-
-**Manual trigger:**
-```bash
-# Make a change
-echo "# DevSecOps Project" >> README.md
-
-# Commit and push
-git add README.md
-git commit -m "Trigger CI/CD pipeline"
-git push origin main
-```
-
-#### Step 5: Monitor Pipeline Execution
-
-1. Go to your GitHub repository
-2. Click on "Actions" tab
-3. View the running workflow
-
-**Pipeline Stages:**
-
-```
-┌─────────────┐
-│   Test      │  ← Run pytest, generate coverage
-└──────┬──────┘
-       │
-┌──────▼──────┐
-│ SonarCloud  │  ← Code quality analysis (optional)
-└──────┬──────┘
-       │
-┌──────▼──────┐
-│   Build     │  ← Docker build, Trivy scan
-└──────┬──────┘
-       │
-┌──────▼──────┐
-│   Deploy    │  ← Push to Docker Hub (main branch only)
-└─────────────┘
-```
-
-#### Step 6: View Pipeline Results
-
-**Test Results:**
-- Click on "Test" job
-- View pytest output and coverage report
-- Coverage uploaded to Codecov (if configured)
-
-**SonarCloud Results:**
-- Visit: https://sonarcloud.io/dashboard?id=your-project-key
-- View code quality, security vulnerabilities, code smells
-
-**Trivy Scan Results:**
-- Click on "Build and Scan Docker Image" job
-- View vulnerability scan results
-- Check "Security" tab for SARIF upload
-
-**Docker Hub:**
-- Visit: https://hub.docker.com/r/your-username/devsecops-app
-- Verify image was pushed successfully
-
-### Local CI/CD Testing
-
-Test pipeline steps locally before pushing:
-
-#### Run Tests Locally
-
-```bash
-cd backend
-pytest test_app.py -v --cov=app --cov-report=xml
-```
-
-#### Build Docker Locally
-
-```bash
-docker build -t devsecops-app:latest -f docker/Dockerfile .
-```
-
-#### Scan with Trivy Locally
-
-```bash
-# Install Trivy
-# Windows (using Chocolatey):
-choco install trivy
-
-# macOS:
-brew install trivy
-
-# Linux:
-wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
-sudo apt-get update
-sudo apt-get install trivy
-h
-# Scan image
-trivy image devsecops-app:latest
-```
-
-#### SonarCloud Scan Locally
-
-```bash
-# Install SonarScanner
-# Download from: https://docs.sonarcloud.io/advanced-setup/ci-based-analysis/sonarscanner-cli/
-
-# Run scan
-sonar-scanner \
-  -Dsonar.projectKey=your-project-key \
-  -Dsonar.organization=your-org \
-  -Dsonar.sources=backend \
-  -Dsonar.host.url=https://sonarcloud.io \
-  -Dsonar.login=your-token
-```
-
-### Pipeline Customization
-
-#### Modify Workflow File
-
-Edit `.github/workflows/ci-cd.yaml` to customize:
-
-**Change trigger branches:**
-```yaml
-on:
-  push:
-    branches: [ main, develop, staging ]
-  pull_request:
-    branches: [ main, develop ]
-```
-
-**Add environment variables:**
-```yaml
-env:
-  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app
-  PYTHON_VERSION: '3.9'
-  APP_ENV: production
-```
-
-**Add deployment to Kubernetes:**
-```yaml
-- name: Deploy to Kubernetes
-  run: |
-    kubectl apply -f k8s/
-  env:
-    KUBECONFIG: ${{ secrets.KUBECONFIG }}
-```
-
-### Troubleshooting CI/CD
-
-**Issue: Pipeline fails on test stage**
-```bash
-# Run tests locally to debug
-cd backend
-pytest test_app.py -v
-
-# Check for missing dependencies
-pip install -r requirements.txt
-```
-
-**Issue: Docker build fails**
-```bash
-# Test build locally
-docker build -t devsecops-app:latest -f docker/Dockerfile .
-
-# Check Dockerfile syntax
-docker build --no-cache -t devsecops-app:latest -f docker/Dockerfile .
-```
-
-**Issue: Trivy scan fails with vulnerabilities**
-```bash
-# Scan locally to see details
-trivy image devsecops-app:latest --severity CRITICAL,HIGH
-
-# Update base image or dependencies
-# Edit docker/Dockerfile or backend/requirements.txt
-```
-
-**Issue: Docker push fails**
-```bash
-# Verify secrets are configured
-# Check DOCKERHUB_USERNAME and DOCKERHUB_TOKEN in GitHub Secrets
-
-# Test login locally
-docker login -u your-username
-```
-
-**Issue: SonarCloud fails**
-```bash
-# Verify SONAR_TOKEN is configured
-# Check sonar-project.properties is correct
-# Ensure organization exists on SonarCloud
-```
-
-## CI/CD Pipeline
-
-### Pipeline Stages
-
-The GitHub Actions workflow implements a comprehensive CI/CD pipeline:
-
-#### 1. Main CI/CD Pipeline (`ci-cd.yaml`)
-- **Trigger**: Push to `main`/`develop`, Pull Request to `main`
-- **Jobs**: Test → Sonar → Build → Deploy
-- **Purpose**: Full end-to-end verification and deployment.
-
-#### 2. PR Check Pipeline (`pr-check.yaml`)
-- **Trigger**: Every Pull Request to `main` or `develop`
-- **Jobs**: Lint (flake8) → Test (pytest)
-- **Purpose**: Fast feedback for developers on code style and logic.
-
-#### 3. Security Scan Pipeline (`security-scan.yaml`)
-- **Trigger**: Push to `main`, Scheduled cron (Nightly)
-- **Jobs**: Trivy Container Scan → SonarCloud Scan
-- **Purpose**: Dedicated deep-security analysis and vulnerability monitoring.
-
-#### 4. Release Pipeline (`release.yaml`)
-- **Trigger**: Version tags (`v*.*.*`)
-- **Jobs**: Build & Push (tagged) → Deployment Notification
-- **Purpose**: Automated production staging of versioned Docker images.
-
-### Pipeline Flow
-
-```
-Push/PR → Test → SonarCloud → Build → Trivy Scan → Push Image → Deploy
-```
-
-### Security Gates
-
-- Tests must pass
-- Trivy scan must not find CRITICAL/HIGH vulnerabilities
-- SonarCloud analysis runs (non-blocking)
-
-## Getting Started
-
-### Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-- **Python 3.9+**: [Download Python](https://www.python.org/downloads/)
-- **Git**: [Download Git](https://git-scm.com/downloads)
-- **Docker** (optional): [Download Docker](https://www.docker.com/get-started)
-- **kubectl** (optional): [Install kubectl](https://kubernetes.io/docs/tasks/tools/)
-- **A code editor**: VS Code, PyCharm, or any text editor
-
-### Quick Start (5 Minutes)
-
-Follow these steps to get the application running locally:
-
-#### Step 1: Clone the Repository
-
-```bash
-# Clone the project
-git clone <your-repository-url>
+git clone https://github.com/your-username/devsecops-project.git
 cd devsecops-project
 ```
 
-#### Step 2: Set Up Python Environment
+#### Step 2 — Create a Virtual Environment
 
-**On Windows:**
+**Windows (PowerShell):**
 ```powershell
-# Create virtual environment
 python -m venv venv
-
-# Activate virtual environment
 venv\Scripts\activate
-
-# Verify activation (you should see (venv) in your prompt)
 ```
 
-**On Linux/macOS:**
+**Linux / macOS:**
 ```bash
-# Create virtual environment
 python3 -m venv venv
-
-# Activate virtual environment
 source venv/bin/activate
 ```
 
-#### Step 3: Install Dependencies
+> You should see `(venv)` at the start of your terminal prompt after activation.
+
+#### Step 3 — Install Dependencies
 
 ```bash
 pip install -r backend/requirements.txt
 ```
 
-#### Step 4: Run the Application
+Expected output: Several packages installed including `Flask==3.1.3`, `Werkzeug==3.1.6`.
 
-**Option A – Terminal (Recommended):**
+#### Step 4 — Run the Flask Application
+
 ```bash
-# Always run from the backend/ directory
 cd backend
 python app.py
 ```
 
-**Option B – VS Code (One-Click Debug):**
-1. Open the project folder in VS Code
-2. Press **F5** or go to **Run → Start Debugging**
-3. Select **"Run Flask App"** from the dropdown
+Expected output:
+```
+ * Serving Flask app 'app'
+ * Debug mode: on
+ * Running on http://127.0.0.1:5000
+ * Running on http://0.0.0.0:5000
+```
 
-> ⚠️ **Important**: Do NOT use the VS Code Run button (▶) directly on `app.py` without the launch config — it starts from the wrong directory and the dashboard won't load. Use **F5** with the provided launch config instead.
+#### Step 5 — Open in Browser
 
-#### Step 5: Access the Application
+| URL | What You See |
+|-----|-------------|
+| `http://localhost:5000/` | Full DevSecOps dashboard (HTML UI) |
+| `http://localhost:5000/health` | `{"status": "healthy"}` |
+| `http://localhost:5000/api/info` | App version and environment |
+| `http://localhost:5000/api/project` | Full project data JSON |
+| `http://localhost:5000/api/pipelines` | CI/CD pipeline metadata |
 
-Open your web browser and navigate to:
+#### Step 6 — Stop the Server
 
-- **Dashboard**: http://localhost:5000/
-- **Pipeline Metadata API**: http://localhost:5000/api/pipelines
-- **Project Data API**: http://localhost:5000/api/project
-- **Health Check**: http://localhost:5000/health
-- **API Info**: http://localhost:5000/api/info
+Press `CTRL + C` in the terminal.
 
-**Expected Result:**
-- You should see a beautiful dashboard with a blue gradient header
-- Cards showing: **Project Overview**, **System Status**, **Test Results** (6 passed), **DevSecOps Components**, and **Available Endpoints**
+---
 
-#### Step 6: Run Tests (Optional)
+### ▶ Method 2 — Run Tests and Security Scan
+
+Always run these **before** committing or building Docker.
+
+#### Step 1 — Install Testing and Audit Tools
 
 ```bash
-# From the backend directory
-pytest test_app.py -v
+pip install -r backend/requirements.txt
+pip install pip-audit
+```
 
-# With coverage report
-pytest test_app.py -v --cov=app --cov-report=term
+#### Step 2 — Run Unit Tests
 
-# Generate HTML coverage report
-pytest test_app.py --cov=app --cov-report=html
-# Open htmlcov/index.html in browser
+```bash
+cd backend
+python -m pytest test_app.py -v
 ```
 
 Expected output:
 ```
-test_app.py::test_index_endpoint PASSED
-test_app.py::test_health_endpoint PASSED
-test_app.py::test_api_info_endpoint PASSED
-test_app.py::test_404_error PASSED
-test_app.py::test_response_content_type PASSED
-test_app.py::test_pipelines_endpoint PASSED
+test_app.py::test_index_endpoint         PASSED
+test_app.py::test_health_endpoint        PASSED
+test_app.py::test_api_info_endpoint      PASSED
+test_app.py::test_404_error              PASSED
+test_app.py::test_response_content_type  PASSED
+test_app.py::test_pipelines_endpoint     PASSED
 
 ====== 6 passed in 0.XX s ======
 ```
 
-### Troubleshooting Local Setup
-
-**Issue: `python` command not found**
-- Solution: Use `python3` instead, or add Python to your PATH
-
-**Issue: Port 5000 already in use**
-- Solution: Change the port in `backend/app.py` or stop the conflicting service
-  ```bash
-  # On Windows
-  netstat -ano | findstr :5000
-  
-  # On Linux/macOS
-  lsof -i :5000
-  ```
-
-**Issue: Module not found errors**
-- Solution: Ensure virtual environment is activated and dependencies are installed
-  ```bash
-  pip install -r backend/requirements.txt
-  ```
-
-**Issue: Frontend not loading data**
-- Solution: Check browser console (F12) for errors, ensure backend is running
-
-## Docker Deployment
-
-Docker provides a consistent environment for running the application across different systems. Follow these steps to build and run the application in a container.
-
-### Step-by-Step Docker Execution
-
-#### Step 1: Verify Docker Installation
-
-```bash
-# Check Docker version
-docker --version
-
-# Verify Docker is running
-docker ps
-```
-
-Expected output: `Docker version 20.x.x` or higher
-
-#### Step 2: Build the Docker Image
-
-```bash
-# From the project root directory
-docker build -t devsecops-app:latest -f docker/Dockerfile .
-```
-
-**What happens during build:**
-1. Stage 1 (Builder): Creates virtual environment and installs dependencies
-2. Stage 2 (Production): Copies application files and creates non-root user
-3. Final image is optimized and secure
-
-**Expected output:**
-```
-[+] Building 45.2s (12/12) FINISHED
- => [internal] load build definition from Dockerfile
- => => transferring dockerfile: 1.23kB
- => [internal] load .dockerignore
- => [builder 1/3] FROM docker.io/library/python:3.9-slim
- => [builder 2/3] COPY backend/requirements.txt .
- => [builder 3/3] RUN python -m venv /opt/venv
- => [stage-1 1/5] COPY --from=builder /opt/venv /opt/venv
- => [stage-1 2/5] COPY backend/app.py .
- => [stage-1 3/5] COPY frontend/ ./static/
- => [stage-1 4/5] RUN groupadd -r appuser
- => exporting to image
- => => naming to docker.io/library/devsecops-app:latest
-```
-
-#### Step 3: Verify the Image
-
-```bash
-# List Docker images
-docker images | grep devsecops-app
-
-# Inspect the image
-docker inspect devsecops-app:latest
-```
-
-Expected: Image size should be around 150-200MB
-
-#### Step 4: Run the Container
-
-```bash
-# Run in detached mode
-docker run -d \
-  -p 5000:5000 \
-  -e APP_ENV=production \
-  --name devsecops-app \
-  devsecops-app:latest
-
-# Verify container is running
-docker ps
-```
-
-**Alternative: Run in interactive mode (for debugging)**
-```bash
-docker run -it \
-  -p 5000:5000 \
-  -e APP_ENV=production \
-  --name devsecops-app \
-  devsecops-app:latest
-```
-
-#### Step 5: Access the Application
-
-- **Dashboard (Main Page)**: http://localhost:5000/
-- **Dashboard (Alternative)**: http://localhost:5000/ui
-- **Project Data API**: http://localhost:5000/api/project
-- **Health Check**: http://localhost:5000/health
-- **API Info**: http://localhost:5000/api/info
-
-#### Step 6: Monitor the Container
-
-```bash
-# View container logs
-docker logs devsecops-app
-
-# Follow logs in real-time
-docker logs -f devsecops-app
-
-# Check container stats
-docker stats devsecops-app
-
-# Execute commands inside container
-docker exec -it devsecops-app /bin/sh
-```
-
-#### Step 7: Stop and Clean Up
-
-```bash
-# Stop the container
-docker stop devsecops-app
-
-# Remove the container
-docker rm devsecops-app
-
-# Remove the image (if needed)
-docker rmi devsecops-app:latest
-```
-
-### Docker Compose (Optional)
-
-Create `docker-compose.yml` in project root:
-
-```yaml
-version: '3.8'
-services:
-  app:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    ports:
-      - "5000:5000"
-    environment:
-      - APP_ENV=production
-    container_name: devsecops-app
-    restart: unless-stopped
-```
-
-Run with Docker Compose:
-```bash
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
-
-### Pushing to Docker Hub
-
-#### Step 1: Login to Docker Hub
-
-```bash
-# Login to Docker Hub
-docker login
-
-# Enter your username and password
-```
-
-#### Step 2: Tag the Image
-
-```bash
-# Tag with your Docker Hub username
-docker tag devsecops-app:latest your-username/devsecops-app:latest
-docker tag devsecops-app:latest your-username/devsecops-app:v1.0.0
-```
-
-#### Step 3: Push to Docker Hub
-
-```bash
-# Push the image
-docker push your-username/devsecops-app:latest
-docker push your-username/devsecops-app:v1.0.0
-```
-
-#### Step 4: Verify on Docker Hub
-
-Visit: https://hub.docker.com/r/your-username/devsecops-app
-
-### Docker Security Scan
-
-```bash
-# Scan for vulnerabilities using Docker Scout
-docker scout cves devsecops-app:latest
-
-# Or use Trivy
-docker run --rm \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  aquasec/trivy image devsecops-app:latest
-```
-
-### Troubleshooting Docker
-
-**Issue: Build fails with "No such file or directory"**
-- Solution: Ensure you're running build from project root
-- Check that `backend/` and `frontend/` directories exist
-
-**Issue: Port 5000 already in use**
-```bash
-# Use a different port
-docker run -d -p 8080:5000 --name devsecops-app devsecops-app:latest
-# Access at http://localhost:8080/ui
-```
-
-**Issue: Container exits immediately**
-```bash
-# Check logs for errors
-docker logs devsecops-app
-
-# Run in interactive mode to debug
-docker run -it devsecops-app:latest /bin/sh
-```
-
-**Issue: Permission denied errors**
-- Solution: This is expected - the container runs as non-root user (UID 1001)
-- This is a security feature, not a bug
-
-## Kubernetes Deployment
-
-Kubernetes provides container orchestration, auto-scaling, and high availability. Follow these steps to deploy the application to a Kubernetes cluster.
-
-### Prerequisites
-
-- Kubernetes cluster (minikube, Docker Desktop, EKS, GKE, or AKS)
-- kubectl installed and configured
-- Docker image pushed to Docker Hub or accessible registry
-
-### Step-by-Step Kubernetes Execution
-
-#### Step 1: Verify Kubernetes Setup
-
-```bash
-# Check kubectl version
-kubectl version --client
-
-# Verify cluster connection
-kubectl cluster-info
-
-# Check nodes
-kubectl get nodes
-```
-
-Expected output: Cluster information and at least one ready node
-
-#### Step 2: Update Docker Image Reference
-
-Before deploying, update the image reference in `k8s/deployment.yaml`:
-
-```yaml
-# Line 23 in k8s/deployment.yaml
-image: your-dockerhub-username/devsecops-app:latest
-```
-
-Replace `your-dockerhub-username` with your actual Docker Hub username.
-
-#### Step 3: Create Namespace (Optional but Recommended)
-
-```bash
-# Create a dedicated namespace
-kubectl create namespace devsecops
-
-# Set as default namespace
-kubectl config set-context --current --namespace=devsecops
-
-# Verify
-kubectl config view --minify | grep namespace:
-```
-
-#### Step 4: Deploy ConfigMap
-
-```bash
-# Apply ConfigMap
-kubectl apply -f k8s/configmap.yaml
-
-# Verify ConfigMap
-kubectl get configmap
-kubectl describe configmap app-config
-```
-
-Expected output:
-```
-NAME         DATA   AGE
-app-config   3      5s
-```
-
-#### Step 5: Deploy Secrets
-
-```bash
-# Apply Secrets
-kubectl apply -f k8s/secret.yaml
-
-# Verify Secrets (values will be hidden)
-kubectl get secrets
-kubectl describe secret app-secrets
-```
-
-**Note:** Update `k8s/secret.yaml` with actual base64-encoded secrets before production use:
-```bash
-# Encode a secret
-echo -n 'your-secret-value' | base64
-```
-
-#### Step 6: Deploy the Application
-
-```bash
-# Apply Deployment
-kubectl apply -f k8s/deployment.yaml
-
-# Watch deployment progress
-kubectl rollout status deployment/devsecops-app
-
-# Verify pods are running
-kubectl get pods
-```
-
-Expected output:
-```
-NAME                              READY   STATUS    RESTARTS   AGE
-devsecops-app-xxxxxxxxxx-xxxxx    1/1     Running   0          30s
-devsecops-app-xxxxxxxxxx-xxxxx    1/1     Running   0          30s
-devsecops-app-xxxxxxxxxx-xxxxx    1/1     Running   0          30s
-```
-
-#### Step 7: Expose the Service
-
-```bash
-# Apply Service
-kubectl apply -f k8s/service.yaml
-
-# Verify Service
-kubectl get svc
-kubectl describe svc devsecops-app-service
-```
-
-**Get the external IP:**
-```bash
-# For LoadBalancer (cloud providers)
-kubectl get svc devsecops-app-service
-
-# For Minikube
-minikube service devsecops-app-service --url
-
-# For Docker Desktop
-# Service will be available at http://localhost
-```
-
-#### Step 8: Enable Auto-Scaling
-
-```bash
-# Apply HPA
-kubectl apply -f k8s/hpa.yaml
-
-# Verify HPA
-kubectl get hpa
-kubectl describe hpa devsecops-app-hpa
-```
-
-Expected output:
-```
-NAME                  REFERENCE                  TARGETS         MINPODS   MAXPODS   REPLICAS
-devsecops-app-hpa     Deployment/devsecops-app   <unknown>/70%   2         10        3
-```
-
-**Note:** Metrics may show `<unknown>` initially. Install metrics-server if needed:
-```bash
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-```
-
-#### Step 9: Access the Application
-
-**For LoadBalancer (AWS, GCP, Azure):**
-```bash
-# Get external IP
-kubectl get svc devsecops-app-service
-
-# Access at http://<EXTERNAL-IP>/ui
-```
-
-**For Minikube:**
-```bash
-# Get URL
-minikube service devsecops-app-service --url
-
-# Access the URL shown
-```
-
-**For Port Forwarding (any cluster):**
-```bash
-# Forward local port to service
-kubectl port-forward svc/devsecops-app-service 8080:80
-
-# Access at http://localhost:8080/ui
-```
-
-#### Step 10: Verify Deployment
-
-```bash
-# Check all resources
-kubectl get all
-
-# Check pod logs
-kubectl logs -l app=devsecops-app
-
-# Check pod details
-kubectl describe pod -l app=devsecops-app
-
-# Test health endpoint
-kubectl exec -it <pod-name> -- wget -qO- http://localhost:5000/health
-```
-
-### Complete Deployment (All at Once)
-
-```bash
-# Deploy everything in order
-kubectl apply -f k8s/configmap.yaml
-kubectl apply -f k8s/secret.yaml
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
-kubectl apply -f k8s/hpa.yaml
-
-# Or deploy entire directory
-kubectl apply -f k8s/
-
-# Verify all resources
-kubectl get all
-```
-
-### Monitoring and Maintenance
-
-#### View Logs
-
-```bash
-# Logs from all pods
-kubectl logs -l app=devsecops-app --all-containers=true
-
-# Follow logs in real-time
-kubectl logs -f -l app=devsecops-app
-
-# Logs from specific pod
-kubectl logs <pod-name>
-```
-
-#### Scale Manually
-
-```bash
-# Scale to 5 replicas
-kubectl scale deployment devsecops-app --replicas=5
-
-# Verify scaling
-kubectl get pods -w
-```
-
-#### Update Deployment
-
-```bash
-# Update image to new version
-kubectl set image deployment/devsecops-app \
-  flask-app=your-username/devsecops-app:v2.0.0
-
-# Check rollout status
-kubectl rollout status deployment/devsecops-app
-
-# View rollout history
-kubectl rollout history deployment/devsecops-app
-```
-
-#### Rollback Deployment
-
-```bash
-# Rollback to previous version
-kubectl rollout undo deployment/devsecops-app
-
-# Rollback to specific revision
-kubectl rollout undo deployment/devsecops-app --to-revision=2
-```
-
-### Cleanup
-
-```bash
-# Delete all resources
-kubectl delete -f k8s/
-
-# Or delete individually
-kubectl delete deployment devsecops-app
-kubectl delete service devsecops-app-service
-kubectl delete hpa devsecops-app-hpa
-kubectl delete configmap app-config
-kubectl delete secret app-secrets
-
-# Delete namespace (if created)
-kubectl delete namespace devsecops
-```
-
-### Troubleshooting Kubernetes
-
-**Issue: Pods stuck in Pending state**
-```bash
-# Check pod events
-kubectl describe pod <pod-name>
-
-# Common causes:
-# - Insufficient cluster resources
-# - Image pull errors
-# - Node selector issues
-```
-
-**Issue: ImagePullBackOff error**
-```bash
-# Check pod events
-kubectl describe pod <pod-name>
-
-# Solutions:
-# - Verify image name is correct
-# - Ensure image is public or credentials are configured
-# - Check Docker Hub repository exists
-```
-
-**Issue: CrashLoopBackOff**
-```bash
-# Check logs
-kubectl logs <pod-name>
-
-# Check previous logs
-kubectl logs <pod-name> --previous
-
-# Common causes:
-# - Application errors
-# - Missing environment variables
-# - Port conflicts
-```
-
-**Issue: Service not accessible**
-```bash
-# Check service endpoints
-kubectl get endpoints devsecops-app-service
-
-# Check if pods are ready
-kubectl get pods
-
-# Test from within cluster
-kubectl run -it --rm debug --image=busybox --restart=Never -- wget -qO- http://devsecops-app-service/health
-```
-
-**Issue: HPA not scaling**
-```bash
-# Check metrics server
-kubectl get apiservice v1beta1.metrics.k8s.io -o yaml
-
-# Install metrics server if missing
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-
-# Check HPA status
-kubectl describe hpa devsecops-app-hpa
-```
-
-### Kubernetes Best Practices Applied
-
-- ✅ **Health Probes**: Liveness and readiness probes configured
-- ✅ **Resource Limits**: CPU and memory limits set
-- ✅ **Security Context**: Non-root user, no privilege escalation
-- ✅ **ConfigMap**: Externalized configuration
-- ✅ **Secrets**: Sensitive data management
-- ✅ **Labels**: Proper labeling for organization
-- ✅ **Replicas**: Multiple replicas for high availability
-- ✅ **Auto-scaling**: HPA for dynamic scaling
-
-## UI Overview
-
-### Design Philosophy
-
-The frontend demonstrates a clean, professional interface with modern web design principles:
-
-- **Clean White/Light Theme**: Professional appearance with subtle shadows and borders
-- **Card-Based Layout**: Organized information display with clear visual hierarchy
-- **Subtle Animations**: Fade-in on page load, smooth hover effects, health status pulse indicators
-- **Modern Typography**: Inter font family for excellent readability
-- **Responsive Design**: Adapts seamlessly to desktop, tablet, and mobile devices
-- **Accessibility**: Semantic HTML5, proper ARIA labels, keyboard navigation support
-
-### Animation Features
-
-The UI includes professional, subtle animations:
-
-- **Page Load**: Smooth fade-in animation (0.5s) for initial render
-- **Card Entrance**: Staggered fade-in for each card (0.05s delay increments)
-- **Hover Effects**: Cards elevate 3px with enhanced shadow on hover
-- **Health Status**: 
-  - Green pulse animation when status is "healthy"
-  - Red pulse animation when status is "error"
-  - Smooth 2s animation cycle with expanding shadow effect
-
-### Frontend/Backend Separation
-
-The project maintains a clear separation between frontend and backend:
-
-**Why Separate?**
-- **Scalability**: Frontend and backend can be scaled independently
-- **Maintainability**: Clear boundaries make code easier to understand and modify
-- **Flexibility**: Frontend can be replaced or updated without touching backend logic
-- **Best Practice**: Industry-standard architecture for modern web applications
-
-**Frontend (`frontend/`)**: 
-- Pure static files (HTML, CSS, JavaScript)
-- Fetches data from backend APIs via JavaScript
-- No server-side rendering or templating
-- Can be served by any static file server or CDN
-
-**Backend (`backend/`)**: 
-- RESTful API providing JSON endpoints
-- Stateless design for horizontal scaling
-- Environment-based configuration
-- Serves frontend files via Flask's static file serving
-
-### UI Features
-
-- **Real-time Status**: Application status fetched from `/` endpoint
-- **Health Monitoring**: Health check data from `/health` endpoint
-- **Application Info**: Version, environment, and name from `/api/info` endpoint
-- **Auto-refresh**: Data updates every 30 seconds automatically
-- **Visual Indicators**: Color-coded badges for environment (production=red, staging=orange, development=green)
-
-### Purpose
-
-The UI serves multiple objectives:
-
-1. **Visual Verification**: Quickly confirm application is deployed and running
-2. **Health Monitoring**: Real-time health status with visual pulse indicators
-3. **Full-Stack Demonstration**: Shows ability to build complete applications
-4. **Professional Presentation**: Clean, modern interface suitable for production use
-
-
-## Testing
-
-### Unit Tests
-
-Located in `backend/test_app.py`:
-- Test all API endpoints
-- Verify response formats
-- Test error handling
-- Check content types
-- Coverage reporting
-
-### Running Tests
+#### Step 3 — Run Tests with Coverage Report
 
 ```bash
 cd backend
-pytest test_app.py -v --cov=app --cov-report=html
+python -m pytest test_app.py -v --cov=app --cov-report=term --cov-report=html
 ```
 
-### Coverage
+Open the HTML coverage report:
+```bash
+# Windows
+start htmlcov/index.html
 
-Current test coverage includes:
-- All API endpoints (/, /health, /api/info)
-- Error handlers (404, 500)
-- Response validation
-- Content-type verification
+# Linux / macOS
+open htmlcov/index.html
+```
 
-## Future Improvements
+#### Step 4 — Run Dependency CVE Scan (pip-audit)
 
-### Security Enhancements
-- Implement rate limiting
-- Add API authentication (JWT)
-- Enable HTTPS/TLS
-- Implement network policies in Kubernetes
-- Add RBAC for Kubernetes
-- Integrate secrets management (HashiCorp Vault, AWS Secrets Manager)
+```bash
+# From project root
+pip-audit -r backend/requirements.txt --strict
+```
 
-### Monitoring & Observability
-- Prometheus metrics
-- Grafana dashboards
-- ELK stack for logging
-- Distributed tracing (Jaeger, Zipkin)
-- Application Performance Monitoring (APM)
+Expected output:
+```
+No known vulnerabilities found
+```
 
-### Infrastructure
-- Terraform for infrastructure as code
-- Multi-environment setup (dev, staging, prod)
-- Blue-green deployments
-- Canary releases
-- Service mesh (Istio, Linkerd)
-
-### CI/CD Enhancements
-- Integration tests
-- End-to-end tests
-- Performance testing
-- Load testing
-- Automated rollback
-- GitOps with ArgoCD or Flux
-
-### Application Features
-- Database integration
-- Caching layer (Redis)
-- Message queue (RabbitMQ, Kafka)
-- Microservices architecture
-- API versioning
-- GraphQL API
+> If CVEs are reported, update the affected packages in `backend/requirements.txt` before proceeding.
 
 ---
 
-**Built with DevSecOps best practices in mind**
+### ▶ Method 3 — Run with Docker
+
+Use this to test the containerised application exactly as it runs in production.
+
+#### Prerequisites
+- Docker Desktop installed and **running** — verify with `docker --version`
+
+#### Step 1 — Build the Docker Image
+
+```bash
+# Run from the project root (where docker/ folder is)
+docker build -t devsecops-app:latest -f docker/Dockerfile .
+```
+
+Expected output: Build completes in ~30–60 seconds with `Successfully built ...`
+
+#### Step 2 — Verify the Image Was Created
+
+```bash
+docker images | grep devsecops-app
+```
+
+Expected:
+```
+devsecops-app   latest   abc123def456   30 seconds ago   ~180MB
+```
+
+#### Step 3 — Run the Docker Container
+
+```bash
+docker run -d \
+  -p 5000:5000 \
+  -e APP_ENV=production \
+  -e DEBUG=False \
+  -e LOG_LEVEL=INFO \
+  --name devsecops-app \
+  devsecops-app:latest
+```
+
+**Windows PowerShell (single line):**
+```powershell
+docker run -d -p 5000:5000 -e APP_ENV=production -e DEBUG=False -e LOG_LEVEL=INFO --name devsecops-app devsecops-app:latest
+```
+
+#### Step 4 — Verify Container Is Running
+
+```bash
+docker ps
+```
+
+Expected:
+```
+CONTAINER ID  IMAGE                STATUS         PORTS
+abc123def456  devsecops-app:latest Up 5 seconds   0.0.0.0:5000->5000/tcp
+```
+
+#### Step 5 — Open in Browser
+
+Visit: `http://localhost:5000/`
+
+#### Step 6 — View Live Logs
+
+```bash
+docker logs -f devsecops-app
+```
+
+Press `CTRL + C` to stop watching logs.
+
+#### Step 7 — Scan the Image for Vulnerabilities (Trivy)
+
+```bash
+# Install Trivy on Windows (PowerShell as Admin)
+winget install aquasecurity.trivy
+
+# Or using Chocolatey
+choco install trivy
+
+# Run the scan
+trivy image devsecops-app:latest --severity CRITICAL,HIGH
+```
+
+#### Step 8 — Stop and Clean Up
+
+```bash
+docker stop devsecops-app
+docker rm devsecops-app
+
+# Remove image (optional)
+docker rmi devsecops-app:latest
+```
+
+---
+
+### ▶ Method 4 — Run with Kubernetes (Multi-Environment)
+
+Deploy to local Kubernetes with all three environments (dev / staging / prod).
+
+#### Prerequisites
+- Docker Desktop with **Kubernetes enabled**, OR minikube, OR kind
+- `kubectl` installed — verify with `kubectl version --client`
+- Kubernetes cluster running — verify with `kubectl cluster-info`
+
+#### Enable Kubernetes in Docker Desktop
+
+1. Open Docker Desktop
+2. Click **Settings** (gear icon)
+3. Select **Kubernetes** from the left menu
+4. Check **Enable Kubernetes**
+5. Click **Apply & Restart**
+6. Wait for the Kubernetes status indicator to turn **green**
+
+Verify:
+```bash
+kubectl cluster-info
+# Expected: Kubernetes control plane is running at https://127.0.0.1:...
+
+kubectl get nodes
+# Expected: docker-desktop   Ready   ...
+```
+
+#### Step 1 — Create the Namespaces
+
+```bash
+kubectl apply -f k8s/overlays/dev/namespace.yaml
+kubectl apply -f k8s/overlays/staging/namespace.yaml
+kubectl apply -f k8s/overlays/prod/namespace.yaml
+```
+
+Verify all three were created:
+```bash
+kubectl get namespaces
+```
+
+Expected output includes:
+```
+dev       Active   5s
+staging   Active   5s
+prod      Active   5s
+```
+
+#### Step 2 — Preview What Will Be Deployed (Dry Run)
+
+```bash
+# See the full compiled YAML for each environment without applying anything
+kubectl kustomize k8s/overlays/dev/
+kubectl kustomize k8s/overlays/staging/
+kubectl kustomize k8s/overlays/prod/
+```
+
+#### Step 3 — Deploy to Dev Environment
+
+```bash
+kubectl apply -k k8s/overlays/dev/
+```
+
+Expected output:
+```
+namespace/dev unchanged
+configmap/app-config created
+secret/app-secrets created
+service/devsecops-app-service created
+deployment.apps/devsecops-app created
+horizontalpodautoscaler.autoscaling/devsecops-app-hpa created
+```
+
+Wait for the deployment to be ready:
+```bash
+kubectl rollout status deployment/devsecops-app -n dev
+# Expected: deployment "devsecops-app" successfully rolled out
+```
+
+#### Step 4 — Deploy to Staging
+
+```bash
+kubectl apply -k k8s/overlays/staging/
+kubectl rollout status deployment/devsecops-app -n staging
+```
+
+#### Step 5 — Deploy to Production
+
+```bash
+kubectl apply -k k8s/overlays/prod/
+kubectl rollout status deployment/devsecops-app -n prod
+```
+
+#### Step 6 — Verify All Environments Are Running
+
+```bash
+# Dev
+kubectl get all -n dev
+
+# Staging
+kubectl get all -n staging
+
+# Production
+kubectl get all -n prod
+```
+
+Expected for each:
+```
+NAME                                 READY   STATUS    RESTARTS
+pod/devsecops-app-7d9f8b6c4-xyzab    1/1     Running   0
+
+NAME                            TYPE       CLUSTER-IP     PORT(S)
+service/devsecops-app-service   NodePort   10.96.xxx.xxx  80:3xxxx/TCP
+
+NAME                                                  REFERENCE              TARGETS       MINPODS  MAXPODS
+horizontalpodautoscaler.autoscaling/devsecops-app-hpa  Deployment/devsecops   <unknown>/70%  1        3
+```
+
+#### Step 7 — Verify Environment-Specific Configuration
+
+```bash
+# Check ConfigMap values differ per environment
+kubectl get configmap app-config -n dev -o yaml
+kubectl get configmap app-config -n staging -o yaml
+kubectl get configmap app-config -n prod -o yaml
+```
+
+Quick comparison check:
+```bash
+# Should print: DEBUG: "True" LOG_LEVEL: DEBUG
+kubectl get configmap app-config -n dev -o jsonpath='{.data}' | python -m json.tool
+
+# Should print: DEBUG: "False" LOG_LEVEL: WARNING
+kubectl get configmap app-config -n prod -o jsonpath='{.data}' | python -m json.tool
+```
+
+#### Step 8 — Verify HPA Replica Counts Per Environment
+
+```bash
+kubectl get hpa -A
+```
+
+Expected:
+```
+NAMESPACE   NAME                  MINPODS  MAXPODS  REPLICAS
+dev         devsecops-app-hpa     1        3        1
+staging     devsecops-app-hpa     2        5        2
+prod        devsecops-app-hpa     2        10       2
+```
+
+#### Step 9 — Access the Application (Port Forward)
+
+```bash
+# Access dev environment
+kubectl port-forward svc/devsecops-app-service 8080:80 -n dev
+# Open: http://localhost:8080/
+
+# Access staging (use different port)
+kubectl port-forward svc/devsecops-app-service 8081:80 -n staging
+# Open: http://localhost:8081/
+
+# Access prod (use different port)
+kubectl port-forward svc/devsecops-app-service 8082:80 -n prod
+# Open: http://localhost:8082/
+```
+
+Press `CTRL + C` to stop port forwarding.
+
+#### Step 10 — View Pod Logs
+
+```bash
+# Replace <pod-name> with actual name from kubectl get pods -n dev
+kubectl logs -n dev <pod-name>
+
+# Or stream live logs
+kubectl logs -f -n dev deployment/devsecops-app
+```
+
+#### Step 11 — Tear Down All Environments
+
+```bash
+kubectl delete -k k8s/overlays/dev/
+kubectl delete -k k8s/overlays/staging/
+kubectl delete -k k8s/overlays/prod/
+kubectl delete namespace dev staging prod
+```
+
+---
+
+### ▶ Method 5 — Push to Docker Hub and Trigger CI/CD
+
+Once you push to GitHub, the CI/CD pipeline runs automatically.
+
+#### Step 1 — Configure GitHub Secrets
+
+In your GitHub repo → **Settings → Secrets and variables → Actions**, add:
+
+| Secret Name | Value |
+|------------|-------|
+| `DOCKERHUB_USERNAME` | Your Docker Hub username |
+| `DOCKERHUB_TOKEN` | Docker Hub access token (not password) |
+| `SONAR_TOKEN` | SonarCloud token (optional) |
+
+#### Step 2 — Push a Feature Branch (→ Deploys to Dev)
+
+```bash
+git checkout -b feature/my-change
+git add .
+git commit -m "feat: my change"
+git push origin feature/my-change
+```
+
+Pipeline runs: `test → sonar → build → deploy-dev`
+
+#### Step 3 — Merge to Main (→ Deploys to Staging)
+
+```bash
+git checkout main
+git merge feature/my-change
+git push origin main
+```
+
+Pipeline runs: `test → sonar → build → deploy-staging`
+
+#### Step 4 — Tag a Release (→ Deploys to Production)
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+Pipeline runs: `security-gates → build-push → deploy-prod`
+
+---
+
+## Multi-Environment Architecture
+
+### Namespace Isolation
+
+| Namespace | Purpose | Debug | Log Level | HPA Min | HPA Max |
+|-----------|---------|-------|-----------|---------|---------|
+| `dev`     | Feature branch development | `True` | `DEBUG` | 1 | 3 |
+| `staging` | Pre-production validation | `False` | `INFO` | 2 | 5 |
+| `prod`    | Live production traffic | `False` | `WARNING` | 2 | 10 |
+
+### Promotion Flow
+
+```
+Feature Branch Push
+        │
+        ▼
+┌───────────────────────────────────────────────────┐
+│              SECURITY GATES                        │
+│  pip-audit → Unit Tests → Docker Build → Trivy     │
+│  SonarCloud (SAST, non-blocking)                   │
+└────────────────────┬──────────────────────────────┘
+                     │  PASS
+                     ▼
+          ┌──────────────────┐
+          │  DEPLOY → dev    │  ← Every feature/hotfix branch
+          │  (dev namespace) │
+          └──────────────────┘
+
+Merge to main
+        │
+        ▼
+  (same security gates)
+        │
+        ▼
+          ┌──────────────────┐
+          │ DEPLOY → staging │  ← Smoke-test, QA sign-off
+          │(staging namespace│
+          └──────────────────┘
+
+Git Tag  v*.*.*
+        │
+        ▼
+┌───────────────────────────────────────────────────┐
+│   RELEASE SECURITY GATES (pip-audit + Trivy)       │
+└────────────────────┬──────────────────────────────┘
+                     │  PASS
+                     ▼
+          ┌──────────────────┐
+          │  DEPLOY → prod   │  ← Versioned Docker image, HA
+          │  (prod namespace)│
+          └──────────────────┘
+```
+
+> **Security is non-negotiable:** If any gate fails, the pipeline halts immediately.
+
+### Kustomize Overlay Structure
+
+```
+k8s/
+├── base/                        # Shared resources (no env-specific values)
+│   ├── kustomization.yaml
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── hpa.yaml
+│
+└── overlays/
+    ├── dev/                     # Dev overrides
+    │   ├── kustomization.yaml
+    │   ├── namespace.yaml
+    │   ├── configmap.yaml       # DEBUG=True, LOG_LEVEL=DEBUG
+    │   ├── secret.yaml
+    │   ├── deployment-patch.yaml
+    │   └── hpa-patch.yaml       # min=1, max=3
+    │
+    ├── staging/                 # Staging overrides
+    │   ├── kustomization.yaml
+    │   ├── namespace.yaml
+    │   ├── configmap.yaml       # DEBUG=False, LOG_LEVEL=INFO
+    │   ├── secret.yaml
+    │   ├── deployment-patch.yaml
+    │   └── hpa-patch.yaml       # min=2, max=5
+    │
+    └── prod/                    # Production overrides
+        ├── kustomization.yaml
+        ├── namespace.yaml
+        ├── configmap.yaml       # DEBUG=False, LOG_LEVEL=WARNING
+        ├── secret.yaml
+        ├── deployment-patch.yaml
+        └── hpa-patch.yaml       # min=2, max=10
+```
+
+---
+
+## Project Structure
+
+```
+devsecops-project/
+├── backend/                       # Flask REST API & dashboard
+│   ├── app.py                    # Main application
+│   ├── requirements.txt          # Python dependencies
+│   └── test_app.py               # Unit tests (pytest)
+│
+├── frontend/                      # Static web interface
+│   ├── index.html                # Single-page dashboard
+│   ├── style.css                 # Styling & animations
+│   └── script.js                 # API integration
+│
+├── docker/
+│   └── Dockerfile                # Multi-stage, non-root build
+│
+├── k8s/
+│   ├── base/                     # Kustomize base manifests
+│   └── overlays/
+│       ├── dev/
+│       ├── staging/
+│       └── prod/
+│
+├── .github/workflows/
+│   ├── ci-cd.yaml                # Main pipeline (all branches → dev/staging)
+│   ├── release.yaml              # Tag pipeline (v* → prod)
+│   ├── gitleaks.yml              # Secrets scanning (all branches/PRs)
+│   ├── pr-check.yaml             # Fast lint + test on PRs
+│   └── security-scan.yaml        # Nightly Trivy + SonarCloud
+│
+├── sonar-project.properties
+├── PROJECT_DESCRIPTION.md
+└── README.md
+```
+
+---
+
+## Technology Stack
+
+| Category | Tool / Technology |
+|----------|------------------|
+| **Language** | Python 3.9 |
+| **Framework** | Flask 3.1.3 |
+| **Testing** | pytest, pytest-cov |
+| **Containerisation** | Docker (multi-stage, non-root) |
+| **Orchestration** | Kubernetes + Kustomize |
+| **Autoscaling** | HorizontalPodAutoscaler (CPU + Memory) |
+| **CI/CD** | GitHub Actions (5 specialised workflows) |
+| **SAST** | SonarCloud |
+| **Secrets Scanning** | Gitleaks |
+| **Dependency CVE** | pip-audit |
+| **Container CVE** | Trivy (Aqua Security) |
+| **Coverage** | Codecov |
+
+---
+
+## Security Enforcement
+
+| Tool | Trigger | Blocks Deployment? | What It Detects |
+|------|---------|-------------------|----------------|
+| **Gitleaks** | Every push & PR | ✅ Yes | Hardcoded secrets, API keys, tokens |
+| **pip-audit** | Every push before build | ✅ Yes | Python dependency CVEs (`--strict`) |
+| **Trivy** | Every build + nightly | ⚠️ Reported | Container OS & library CVEs |
+| **SonarCloud** | Push to main + nightly | ⚠️ Non-blocking | Code smells, SAST hotspots |
+
+### Security Gate Flow
+
+```
+  Any Push  ───►  Gitleaks   ── FAIL? ──► Pipeline STOPS ✋
+                      │ PASS
+                      ▼
+                  pip-audit  ── FAIL? ──► Pipeline STOPS ✋
+                      │ PASS
+                      ▼
+                  Unit Tests ── FAIL? ──► Pipeline STOPS ✋
+                      │ PASS
+                      ▼
+                  Docker Build + Trivy ──► SARIF → GitHub Security tab
+                      │
+                  SonarCloud SAST ──────► Results on sonarcloud.io
+                      │ ALL GATES PASSED
+                      ▼
+                  DEPLOY (dev / staging / prod)
+```
+
+---
+
+## CI/CD Pipeline
+
+| Workflow | Trigger | Jobs | Deploys To |
+|----------|---------|------|-----------|
+| `gitleaks.yml` | All pushes/PRs | Secrets scan | Blocks on secrets |
+| `pr-check.yaml` | PRs → main | flake8 + pytest | — |
+| `ci-cd.yaml` | Feature branches | test → build → deploy-dev | `dev` |
+| `ci-cd.yaml` | Push to `main` | test → build → deploy-staging | `staging` |
+| `release.yaml` | Tags `v*.*.*` | security-gates → build-push → deploy-prod | `prod` |
+| `security-scan.yaml` | main + nightly | Trivy + SonarCloud | — |
+
+### Required GitHub Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `DOCKERHUB_USERNAME` | Docker Hub username |
+| `DOCKERHUB_TOKEN` | Docker Hub access token |
+| `SONAR_TOKEN` | SonarCloud token (optional) |
+| `GITHUB_TOKEN` | Auto-provided by Actions |
+
+---
+
+## Environment Variable Reference
+
+| Variable | dev | staging | prod | Source |
+|----------|-----|---------|------|--------|
+| `APP_ENV` | `development` | `staging` | `production` | ConfigMap |
+| `DEBUG` | `True` | `False` | `False` | ConfigMap |
+| `LOG_LEVEL` | `DEBUG` | `INFO` | `WARNING` | ConfigMap |
+| `PORT` | `5000` | `5000` | `5000` | Deployment |
+| `APP_SECRET_KEY` | dev placeholder | staging placeholder | prod placeholder | Secret |
+
+---
+
+## Testing
+
+```bash
+# Run all tests
+cd backend
+python -m pytest test_app.py -v
+
+# With coverage report in terminal
+python -m pytest test_app.py -v --cov=app --cov-report=term
+
+# Generate HTML coverage report
+python -m pytest test_app.py --cov=app --cov-report=html
+# Then open: backend/htmlcov/index.html
+```
+
+Test suite (6 tests):
+- `test_index_endpoint` — Dashboard returns 200 HTML
+- `test_health_endpoint` — `/health` returns 200 JSON
+- `test_api_info_endpoint` — `/api/info` returns version info
+- `test_404_error` — Unknown routes return 404
+- `test_response_content_type` — Correct Content-Type headers
+- `test_pipelines_endpoint` — `/api/pipelines` returns pipeline list
+
+---
+
+## Troubleshooting
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `python: command not found` | Python not in PATH | Use `python3`, or reinstall Python |
+| Port 5000 in use | Another app using port | `netstat -ano \| findstr :5000` (Windows), kill the PID |
+| Module not found | venv not active | Run `venv\Scripts\activate` (Windows) or `source venv/bin/activate` |
+| Docker Desktop not running | Docker not started | Open Docker Desktop app, wait for it to fully start |
+| `kubectl: command not found` | kubectl not installed | Install via `winget install Kubernetes.kubectl` |
+| Kubernetes not ready | Cluster not enabled | Docker Desktop → Settings → Kubernetes → Enable Kubernetes |
+| Image pull fails in K8s | Image not pushed | Run `docker push your-username/devsecops-app:latest` first |
+| pip-audit reports CVEs | Outdated packages | Update versions in `backend/requirements.txt` |
+| Port-forward disconnects | Normal timeout | Re-run the `kubectl port-forward` command |
+
+---
+
+## Future Improvements
+
+- [ ] **Network Policies** — Restrict inter-namespace communication
+- [ ] **RBAC** — Role-based access control per namespace
+- [ ] **External Secrets Operator** — Vault / AWS Secrets Manager integration for prod
+- [ ] **Ingress Controller** — NGINX ingress with TLS termination per environment
+- [ ] **Prometheus + Grafana** — Metrics dashboards per namespace
+- [ ] **ArgoCD / Flux** — GitOps-based continuous deployment
+- [ ] **OPA / Gatekeeper** — Policy-as-code admission control
+- [ ] **Multi-arch Docker builds** — ARM64 support for Apple Silicon

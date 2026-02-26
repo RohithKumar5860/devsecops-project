@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devsecops-app-service
+  labels:
+    app: devsecops-app
+spec:
+  # NodePort works on a local single-node cluster (minikube, kind, Docker Desktop)
+  # without requiring a cloud load-balancer controller.
+  type: NodePort
+  selector:
+    app: devsecops-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+    name: http
+  sessionAffinity: None

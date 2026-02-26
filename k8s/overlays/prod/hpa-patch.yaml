@@ -1,0 +1,8 @@
+# Prod HPA patch – full scale-out range matching base defaults (kept explicit for clarity)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: devsecops-app-hpa
+spec:
+  minReplicas: 2
+  maxReplicas: 10

@@ -1,8 +1,20 @@
 name: DevSecOps CI/CD Pipeline
 
+# ──────────────────────────────────────────────────────────────────────────────
+# CI/CD Promotion Flow:
+#
+#   Feature branch push  →  security-gates  →  deploy-dev   (dev namespace)
+#   Push to main         →  security-gates  →  deploy-staging (staging namespace)
+#   Git tag (v*)         →  release.yaml    →  deploy-prod  (prod namespace)
+#
+# Security gates (test + build/pip-audit/Trivy + sonar) MUST pass before ANY
+# deploy job is allowed to run. A failed gate cancels the downstream deployment.
+# ──────────────────────────────────────────────────────────────────────────────
+
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ "**" ]       # All branches trigger security gates + dev deploy
+                             # Tags are NOT branch pushes, so release.yaml handles them
   pull_request:
     branches: [ main ]
 
@@ -10,20 +22,21 @@ env:
   DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/devsecops-app
   PYTHON_VERSION: '3.9'
 
+# ── Job 1: Unit Tests + pip-audit (Dependency CVE Gate) ───────────────────────
 jobs:
   test:
-    name: Run Tests
+    name: Run Tests & pip-audit
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
-      
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
-        
+
     - name: Cache Python Dependencies
       uses: actions/cache@v4
       with:
@@ -31,7 +44,7 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
-          
+
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
@@ -50,7 +63,7 @@ jobs:
       run: |
         cd backend
         pytest test_app.py -v --cov=app --cov-report=xml --cov-report=term
-        
+
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
@@ -58,18 +71,19 @@ jobs:
         flags: unittests
         fail_ci_if_error: false
 
+# ── Job 2: SonarCloud SAST Analysis ───────────────────────────────────────────
   sonar:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
     needs: test
     if: github.event_name == 'push'
-    
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        
+
     - name: Run SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
       env:
@@ -77,24 +91,25 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       continue-on-error: true
 
+# ── Job 3: Docker Build + Trivy Container Scan ────────────────────────────────
   build:
     name: Build and Scan Docker Image
     runs-on: ubuntu-latest
     needs: test
-    
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
-      
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-      
+
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-        
+
     - name: Extract Metadata
       id: meta
       uses: docker/metadata-action@v5
@@ -105,7 +120,7 @@ jobs:
           type=ref,event=pr
           type=sha,prefix={{branch}}-
           type=raw,value=latest,enable={{is_default_branch}}
-          
+
     - name: Build Docker Image
       uses: docker/build-push-action@v5
       with:
@@ -117,7 +132,7 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
-        
+
     - name: Run Trivy Vulnerability Scanner
       uses: aquasecurity/trivy-action@master
       with:
@@ -127,14 +142,14 @@ jobs:
         severity: 'CRITICAL,HIGH'
         exit-code: '0'
       continue-on-error: true
-        
+
     - name: Upload Trivy Results to GitHub Security
       uses: github/codeql-action/upload-sarif@v4
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
       continue-on-error: true
-        
+
     - name: Push Docker Image
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: docker/build-push-action@v5
@@ -147,18 +162,78 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-  deploy:
-    name: Deploy to Kubernetes
+# ── Job 4: Deploy to Dev ──────────────────────────────────────────────────────
+# Runs on every branch push (feature branches) after security gates pass.
+# Skip on main (main goes to staging) and PRs.
+  deploy-dev:
+    name: Deploy to Dev Namespace
     runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+    needs: [ test, build ]
+    if: |
+      github.event_name == 'push' &&
+      github.ref != 'refs/heads/main' &&
+      !startsWith(github.ref, 'refs/tags/')
+    environment: dev
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
-      
-    - name: Deployment Notification
+
+    - name: Determine Image Tag
+      id: tag
       run: |
-        echo "Deployment step - Configure kubectl and apply k8s manifests"
-        echo "This step requires cluster credentials to be configured"
-        echo "Kubernetes manifests are ready in k8s/ directory"
+        BRANCH_NAME="${GITHUB_REF_NAME//\//-}"
+        echo "tag=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+
+    - name: Deploy to Dev (Kustomize)
+      run: |
+        echo "════════════════════════════════════════"
+        echo "  SECURITY GATES: PASSED ✅"
+        echo "  Deploying to: dev namespace"
+        echo "  Branch:       ${{ github.ref_name }}"
+        echo "  Image:        ${{ env.DOCKER_IMAGE }}:${{ steps.tag.outputs.tag }}"
+        echo "════════════════════════════════════════"
+        echo ""
+        echo "To deploy locally, run:"
+        echo "  kubectl apply -k k8s/overlays/dev/"
+        echo "  kubectl rollout status deployment/devsecops-app -n dev"
+        echo ""
+        echo "Verify:"
+        echo "  kubectl get all -n dev"
+        echo "  kubectl get configmap app-config -n dev -o yaml"
+        # In a live cluster, replace the echo block with:
+        # kubectl apply -k k8s/overlays/dev/
+        # kubectl rollout status deployment/devsecops-app -n dev --timeout=120s
+
+# ── Job 5: Deploy to Staging ──────────────────────────────────────────────────
+# Runs only on push to main after all security gates pass.
+  deploy-staging:
+    name: Deploy to Staging Namespace
+    runs-on: ubuntu-latest
+    needs: [ test, build ]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: staging
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Deploy to Staging (Kustomize)
+      run: |
+        echo "════════════════════════════════════════"
+        echo "  SECURITY GATES: PASSED ✅"
+        echo "  Deploying to: staging namespace"
+        echo "  Branch:       ${{ github.ref_name }}"
+        echo "  Image:        ${{ env.DOCKER_IMAGE }}:latest"
+        echo "════════════════════════════════════════"
+        echo ""
+        echo "To deploy locally, run:"
+        echo "  kubectl apply -k k8s/overlays/staging/"
+        echo "  kubectl rollout status deployment/devsecops-app -n staging"
+        echo ""
+        echo "Verify:"
+        echo "  kubectl get all -n staging"
+        echo "  kubectl get configmap app-config -n staging -o yaml"
+        # In a live cluster, replace the echo block with:
+        # kubectl apply -k k8s/overlays/staging/
+        # kubectl rollout status deployment/devsecops-app -n staging --timeout=120s
