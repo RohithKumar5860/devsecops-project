@@ -40,6 +40,17 @@ spec:
             configMapKeyRef:
               name: app-config
               key: LOG_LEVEL
+        - name: APP_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: APP_SECRET_KEY
+              # optional: true allows dev pods to start without the key.
+              # The app auto-generates an ephemeral key in development.
+              # In staging/production the key must be present – the app
+              # performs fail-fast validation at startup and will refuse
+              # to start if APP_SECRET_KEY is absent.
+              optional: true
         - name: PORT
           value: "5000"
         resources:
