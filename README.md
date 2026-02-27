@@ -79,41 +79,23 @@ cd backend
 python app.py
 ```
 
-<<<<<<< HEAD
-
-
-#### Step 5 — Open in Browser
-
-| URL | What You See |
-|-----|-------------|
-| `http://localhost:5000/` | Full DevSecOps dashboard (HTML UI) |
-| `http://localhost:5000/health` | `{"status": "healthy"}` |
-| `http://localhost:5000/api/info` | App version and environment |
-| `http://localhost:5000/api/project` | Full project data JSON |
-| `http://localhost:5000/api/pipelines` | CI/CD pipeline metadata |
-
-#### Step 6 — Stop the Server
-
-Press `CTRL + C` in the terminal.
-
----
-
-=======
 Expected output:
 ```
  * Serving Flask app 'app'
- * Debug mode: on
+ * Debug mode: off
  * Running on http://127.0.0.1:5000
  * Running on http://0.0.0.0:5000
 ```
 
+> **Note:** In `development` mode, if `APP_SECRET_KEY` is not set, the app auto-generates an ephemeral key. In `staging` / `production`, `APP_SECRET_KEY` **must** be provided or the app will refuse to start.
+
 #### Step 5 — Open in Browser
 
 | URL | What You See |
 |-----|-------------|
 | `http://localhost:5000/` | Full DevSecOps dashboard (HTML UI) |
 | `http://localhost:5000/health` | `{"status": "healthy"}` |
-| `http://localhost:5000/api/info` | App version and environment |
+| `http://localhost:5000/api/info` | `{"version": "1.0.0", "environment": "development", ...}` |
 | `http://localhost:5000/api/project` | Full project data JSON |
 | `http://localhost:5000/api/pipelines` | CI/CD pipeline metadata |
 
@@ -122,8 +104,6 @@ Expected output:
 Press `CTRL + C` in the terminal.
 
 ---
-
->>>>>>> f8b9cd8 (feat(k8s,security,ci): multi-environment deployment with Kustomize overlays, security-gated CI/CD promotion, and CVE fixes)
 ### ▶ Method 2 — Run Tests and Security Scan
 
 Always run these **before** committing or building Docker.
@@ -215,11 +195,14 @@ devsecops-app   latest   abc123def456   30 seconds ago   ~180MB
 
 #### Step 3 — Run the Docker Container
 
+> **Security:** `APP_SECRET_KEY` is required when `APP_ENV` is not `development`. Generate a strong key with `python -c "import secrets; print(secrets.token_hex(32))"`.
+
 ```bash
 docker run -d \
   -p 5000:5000 \
   -e APP_ENV=production \
-  -e DEBUG=False \
+  -e APP_SECRET_KEY="<your-generated-secret-key>" \
+  -e DEBUG=false \
   -e LOG_LEVEL=INFO \
   --name devsecops-app \
   devsecops-app:latest
@@ -227,7 +210,7 @@ docker run -d \
 
 **Windows PowerShell (single line):**
 ```powershell
-docker run -d -p 5000:5000 -e APP_ENV=production -e DEBUG=False -e LOG_LEVEL=INFO --name devsecops-app devsecops-app:latest
+docker run -d -p 5000:5000 -e APP_ENV=production -e APP_SECRET_KEY="<your-generated-secret-key>" -e DEBUG=false -e LOG_LEVEL=INFO --name devsecops-app devsecops-app:latest
 ```
 
 #### Step 4 — Verify Container Is Running
@@ -359,7 +342,14 @@ kubectl rollout status deployment/devsecops-app -n dev
 
 #### Step 4 — Deploy to Staging
 
+> **Secret required:** Inject `APP_SECRET_KEY` before deploying to staging or production. The app will refuse to start without it.
+
 ```bash
+# Inject the secret first (use $env:APP_SECRET_KEY in PowerShell)
+kubectl create secret generic app-secrets \
+  --from-literal=APP_SECRET_KEY="${APP_SECRET_KEY}" \
+  -n staging --dry-run=client -o yaml | kubectl apply -f -
+
 kubectl apply -k k8s/overlays/staging/
 kubectl rollout status deployment/devsecops-app -n staging
 ```
@@ -479,6 +469,7 @@ In your GitHub repo → **Settings → Secrets and variables → Actions**, add:
 |------------|-------|
 | `DOCKERHUB_USERNAME` | Your Docker Hub username |
 | `DOCKERHUB_TOKEN` | Docker Hub access token (not password) |
+| `APP_SECRET_KEY` | A strong random key — generate with `python -c "import secrets; print(secrets.token_hex(32))"` |
 | `SONAR_TOKEN` | SonarCloud token (optional) |
 
 #### Step 2 — Push a Feature Branch (→ Deploys to Dev)
@@ -711,6 +702,7 @@ devsecops-project/
 |--------|-------------|
 | `DOCKERHUB_USERNAME` | Docker Hub username |
 | `DOCKERHUB_TOKEN` | Docker Hub access token |
+| `APP_SECRET_KEY` | Flask secret key — required for staging & production deployments |
 | `SONAR_TOKEN` | SonarCloud token (optional) |
 | `GITHUB_TOKEN` | Auto-provided by Actions |
 
@@ -721,10 +713,14 @@ devsecops-project/
 | Variable | dev | staging | prod | Source |
 |----------|-----|---------|------|--------|
 | `APP_ENV` | `development` | `staging` | `production` | ConfigMap |
-| `DEBUG` | `True` | `False` | `False` | ConfigMap |
+| `DEBUG` | `true` | `false` | `false` | ConfigMap |
 | `LOG_LEVEL` | `DEBUG` | `INFO` | `WARNING` | ConfigMap |
 | `PORT` | `5000` | `5000` | `5000` | Deployment |
-| `APP_SECRET_KEY` | dev placeholder | staging placeholder | prod placeholder | Secret |
+| `APP_SECRET_KEY` | Auto-generated (ephemeral) | **Required** — inject via CI/CD | **Required** — inject via CI/CD | Kubernetes Secret |
+
+> **Fail-fast validation:** If `APP_SECRET_KEY` is absent in `staging` or `production`, the application **refuses to start** with a clear `RuntimeError`. In `development`, an ephemeral key is auto-generated using `secrets.token_hex(32)` — it is never stored or committed.
+>
+> **DEBUG guard:** Setting `DEBUG=true` while `APP_ENV=production` also raises a `RuntimeError` at startup, preventing accidental debug exposure.
 
 ---
 
@@ -757,6 +753,8 @@ Test suite (6 tests):
 
 | Problem | Cause | Fix |
 |---------|-------|-----|
+| `RuntimeError: APP_SECRET_KEY must be set` | Missing secret in staging/prod | Set `APP_SECRET_KEY` env var or inject via Kubernetes Secret |
+| `RuntimeError: DEBUG cannot be enabled in production` | `DEBUG=true` with `APP_ENV=production` | Set `DEBUG=false` or remove `DEBUG` env var |
 | `python: command not found` | Python not in PATH | Use `python3`, or reinstall Python |
 | Port 5000 in use | Another app using port | `netstat -ano \| findstr :5000` (Windows), kill the PID |
 | Module not found | venv not active | Run `venv\Scripts\activate` (Windows) or `source venv/bin/activate` |
