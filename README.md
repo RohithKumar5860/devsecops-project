@@ -79,6 +79,7 @@ cd backend
 python app.py
 ```
 
+<<<<<<< HEAD
 
 
 #### Step 5 — Open in Browser
@@ -97,6 +98,32 @@ Press `CTRL + C` in the terminal.
 
 ---
 
+=======
+Expected output:
+```
+ * Serving Flask app 'app'
+ * Debug mode: on
+ * Running on http://127.0.0.1:5000
+ * Running on http://0.0.0.0:5000
+```
+
+#### Step 5 — Open in Browser
+
+| URL | What You See |
+|-----|-------------|
+| `http://localhost:5000/` | Full DevSecOps dashboard (HTML UI) |
+| `http://localhost:5000/health` | `{"status": "healthy"}` |
+| `http://localhost:5000/api/info` | App version and environment |
+| `http://localhost:5000/api/project` | Full project data JSON |
+| `http://localhost:5000/api/pipelines` | CI/CD pipeline metadata |
+
+#### Step 6 — Stop the Server
+
+Press `CTRL + C` in the terminal.
+
+---
+
+>>>>>>> f8b9cd8 (feat(k8s,security,ci): multi-environment deployment with Kustomize overlays, security-gated CI/CD promotion, and CVE fixes)
 ### ▶ Method 2 — Run Tests and Security Scan
 
 Always run these **before** committing or building Docker.
