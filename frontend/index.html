@@ -4,153 +4,614 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="DevSecOps Flask Application - Secure CI/CD Pipeline Dashboard">
-    <title>DevSecOps Application Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="description" content="DevSecOps Control Platform — Enterprise Security Dashboard">
+    <meta name="theme-color" content="#0f172a">
+    <title>DevSecOps Control Platform</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="container">
-        <header class="header">
-            <h1 class="title">DevSecOps Project Dashboard</h1>
-            <p class="subtitle">Complete Project Overview</p>
-        </header>
 
-        <main class="main-content">
-            <div class="cards-grid">
-                <!-- Project Overview Card -->
-                <div class="card card-wide">
-                    <div class="card-header">
-                        <div class="icon-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                                <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                            </svg>
-                        </div>
-                        <h2 class="card-title">Project Overview</h2>
-                    </div>
-                    <div class="card-content">
-                        <h3 class="project-name" id="app-name">Loading...</h3>
-                        <p class="project-description" id="app-description">Loading project description...</p>
-                        <div class="info-grid">
-                            <div class="info-row">
-                                <span class="info-label">Version:</span>
-                                <span class="info-value" id="app-version">Loading...</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Environment:</span>
-                                <span class="badge" id="app-environment">Loading...</span>
-                            </div>
-                        </div>
+    <!-- ═══════════════════════════════════════════
+       TOAST CONTAINER  (top-right)
+  ═══════════════════════════════════════════ -->
+    <div class="toast-container" id="toast-container" role="status" aria-live="polite" aria-label="Notifications"></div>
+
+    <!-- ═══════════════════════════════════════════
+       MODAL — reusable overlay
+  ═══════════════════════════════════════════ -->
+    <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title"
+        aria-describedby="modal-body">
+        <div class="modal" role="document">
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <span class="modal-icon" id="modal-icon" aria-hidden="true">🔧</span>
+                    <div>
+                        <h2 class="modal-title" id="modal-title">Detail</h2>
+                        <p class="modal-subtitle" id="modal-subtitle"></p>
                     </div>
                 </div>
-
-                <!-- System Status Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="icon-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-                            </svg>
-                        </div>
-                        <h2 class="card-title">System Status</h2>
-                    </div>
-                    <div class="card-content">
-                        <div class="status-indicator">
-                            <div class="status-dot" id="status-dot"></div>
-                            <span class="status-text" id="status-text">Checking...</span>
-                        </div>
-                        <p class="status-message" id="status-message">Connecting to backend...</p>
-                    </div>
+                <button class="modal-close" id="modal-close" aria-label="Close detail modal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div class="modal-stats" id="modal-stats"></div>
+                <div class="modal-section" id="modal-desc-section">
+                    <h3 class="modal-section-title">Description</h3>
+                    <p class="modal-text" id="modal-description"></p>
                 </div>
-
-                <!-- Test Results Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="icon-wrapper" style="background: linear-gradient(135deg, var(--success-color), #10b981);">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                            </svg>
-                        </div>
-                        <h2 class="card-title">Automated Test Results</h2>
-                    </div>
-                    <div class="card-content">
-                        <div class="info-grid">
-                            <div class="info-row">
-                                <span class="info-label">Total Tests:</span>
-                                <span class="info-value" id="test-total">0</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Passed:</span>
-                                <span class="info-value" style="color: var(--success-color);" id="test-passed">0</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Failed:</span>
-                                <span class="info-value" id="test-failed">0</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Status:</span>
-                                <span class="badge" id="test-status" style="background: var(--success-color);">N/A</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- DevSecOps Components Card -->
-                <div class="card card-wide">
-                    <div class="card-header">
-                        <div class="icon-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                            </svg>
-                        </div>
-                        <h2 class="card-title">DevSecOps Components</h2>
-                    </div>
-                    <div class="card-content">
-                        <ul class="components-list" id="components-list">
-                            <li class="component-item">
-                                <div class="component-header">
-                                    <span class="component-name">Loading...</span>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Available Endpoints Card -->
-                <div class="card">
-                    <div class="card-header">
-                        <div class="icon-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M12 16v-4M12 8h.01"></path>
-                            </svg>
-                        </div>
-                        <h2 class="card-title">Available Endpoints</h2>
-                    </div>
-                    <div class="card-content">
-                        <ul class="endpoints-list" id="endpoints-list">
-                            <li class="endpoint-item">
-                                <div class="endpoint-header">
-                                    <span class="endpoint-method">GET</span>
-                                    <span class="endpoint-path">Loading...</span>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
+                <div class="modal-section" id="modal-int-section">
+                    <h3 class="modal-section-title">Integration Points</h3>
+                    <ul class="modal-list" id="modal-integrations"></ul>
                 </div>
             </div>
-        </main>
-
-        <footer class="footer">
-            <p>Built with Flask, Docker, Kubernetes & GitHub Actions</p>
-            <p class="footer-note">DevSecOps Best Practices Applied</p>
-        </footer>
+        </div>
     </div>
+
+    <!-- ═══════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Platform navigation">
+
+        <div class="sidebar-brand">
+            <div class="sidebar-logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+            </div>
+            <div>
+                <span class="sidebar-name">DevSecOps</span>
+                <span class="sidebar-sub">Control Platform</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav" id="sidebar-nav" aria-label="Section links">
+            <a class="sidebar-link active" href="#sec-overview" data-section="sec-overview">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                <span>Overview</span>
+            </a>
+            <a class="sidebar-link" href="#sec-security" data-section="sec-security">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                <span>Security</span>
+            </a>
+            <a class="sidebar-link" href="#sec-pipeline" data-section="sec-pipeline">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+                <span>Pipelines</span>
+            </a>
+            <a class="sidebar-link" href="#sec-components" data-section="sec-components">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" />
+                    <line x1="8" y1="21" x2="16" y2="21" />
+                    <line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+                <span>Components</span>
+            </a>
+            <a class="sidebar-link" href="#sec-endpoints" data-section="sec-endpoints">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="16 18 22 12 16 6" />
+                    <polyline points="8 6 2 12 8 18" />
+                </svg>
+                <span>API Endpoints</span>
+            </a>
+            <a class="sidebar-link" href="#sec-compliance" data-section="sec-compliance">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                <span>Compliance</span>
+            </a>
+            <a class="sidebar-link" href="#sec-activity" data-section="sec-activity">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span>Activity Log</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-health" id="sb-health-wrap">
+                <div class="sidebar-health-dot" id="sb-health-dot" aria-hidden="true"></div>
+                <span id="sb-health-label">Connecting…</span>
+            </div>
+            <div class="sidebar-uptime-row">
+                <span class="sidebar-uptime-title">Session Uptime</span>
+                <span class="sidebar-uptime-value" id="uptime-counter">00:00:00</span>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- ═══════════════════════════════════════════
+       MAIN WRAPPER
+  ═══════════════════════════════════════════ -->
+    <div class="main-wrap" id="main-wrap">
+
+        <!-- Top Bar -->
+        <header class="topbar" id="topbar">
+            <div class="topbar-left">
+                <button class="hamburger" id="hamburger" aria-label="Toggle sidebar" aria-expanded="true"
+                    aria-controls="sidebar">
+                    <span></span><span></span><span></span>
+                </button>
+                <nav class="breadcrumb" aria-label="Current section">
+                    <span class="breadcrumb-root">Platform</span>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                    <span class="breadcrumb-leaf" id="breadcrumb-leaf">Overview</span>
+                </nav>
+            </div>
+            <div class="topbar-center">
+                <time class="live-clock" id="live-clock" aria-label="Current time">--:--:--</time>
+            </div>
+            <div class="topbar-right">
+                <div class="threat-pill" id="threat-pill" aria-label="Current threat level">
+                    <span class="threat-dot" id="threat-dot" aria-hidden="true"></span>
+                    <span class="threat-label" id="threat-label">Assessing…</span>
+                </div>
+                <div class="env-badge" id="env-badge" aria-label="Current environment">—</div>
+                <button class="icon-btn" id="refresh-btn" onclick="triggerRefresh()" title="Refresh dashboard data"
+                    aria-label="Refresh dashboard">
+                    <svg class="icon-btn-svg" id="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <polyline points="23 4 23 10 17 10" />
+                        <polyline points="1 20 1 14 7 14" />
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                    <span class="icon-btn-spinner" id="refresh-spinner" aria-hidden="true"></span>
+                </button>
+                <button class="icon-btn" id="reset-btn" onclick="resetDashboard()" title="Reset dashboard"
+                    aria-label="Reset dashboard to initial state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="1 4 1 10 7 10" />
+                        <path d="M3.51 15a9 9 0 1 0 .49-4.36" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Sticky Status Ribbon -->
+        <div class="ribbon" id="ribbon" role="status" aria-label="System status summary">
+            <div class="ribbon-item ribbon-health" id="ribbon-health">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+                <span id="ribbon-health-text">Health: —</span>
+            </div>
+            <div class="ribbon-sep" aria-hidden="true"></div>
+            <div class="ribbon-item">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="16 18 22 12 16 6" />
+                    <polyline points="8 6 2 12 8 18" />
+                </svg>
+                <span id="ribbon-version-text">v—</span>
+            </div>
+            <div class="ribbon-sep" aria-hidden="true"></div>
+            <div class="ribbon-item">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                <span id="ribbon-tests-text">Tests: —</span>
+            </div>
+            <div class="ribbon-sep" aria-hidden="true"></div>
+            <div class="ribbon-item">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span id="ribbon-refresh-text">Refreshed: —</span>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <main class="page-content" id="page-content">
+
+            <!-- ── OVERVIEW ──────────────────────────────── -->
+            <section id="sec-overview" class="section" aria-labelledby="overview-heading">
+                <div class="section-head">
+                    <div>
+                        <h1 class="section-title" id="overview-heading">Platform Overview</h1>
+                        <p class="section-desc" id="app-description">Loading project description…</p>
+                    </div>
+                    <p class="status-msg" id="status-message">Initializing…</p>
+                </div>
+
+                <div class="kpi-grid" role="list" aria-label="Key performance indicators">
+                    <article class="kpi-card" role="listitem" id="kpi-health">
+                        <div class="kpi-icon kpi-icon--success" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                            </svg>
+                        </div>
+                        <div class="kpi-body">
+                            <div class="kpi-value" id="kpi-health-val">—</div>
+                            <div class="kpi-label">System Health</div>
+                            <span class="badge badge--success" id="kpi-health-badge">Operational</span>
+                        </div>
+                    </article>
+                    <article class="kpi-card" role="listitem" id="kpi-tests">
+                        <div class="kpi-icon kpi-icon--info" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                <polyline points="22 4 12 14.01 9 11.01" />
+                            </svg>
+                        </div>
+                        <div class="kpi-body">
+                            <div class="kpi-value" id="kpi-tests-val">—</div>
+                            <div class="kpi-label">Tests Passing</div>
+                            <span class="badge badge--info" id="kpi-tests-badge">—</span>
+                        </div>
+                    </article>
+                    <article class="kpi-card" role="listitem" id="kpi-vulns">
+                        <div class="kpi-icon kpi-icon--success" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path
+                                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                <line x1="12" y1="9" x2="12" y2="13" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                            </svg>
+                        </div>
+                        <div class="kpi-body">
+                            <div class="kpi-value" id="kpi-vulns-val">0</div>
+                            <div class="kpi-label">Vulnerabilities</div>
+                            <span class="badge badge--success">Clean</span>
+                        </div>
+                    </article>
+                    <article class="kpi-card" role="listitem" id="kpi-pipelines">
+                        <div class="kpi-icon kpi-icon--purple" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+                            </svg>
+                        </div>
+                        <div class="kpi-body">
+                            <div class="kpi-value" id="kpi-pipelines-val">—</div>
+                            <div class="kpi-label">Active Pipelines</div>
+                            <span class="badge badge--purple" id="kpi-pipelines-badge">Loading</span>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- ── SECURITY ──────────────────────────────── -->
+            <section id="sec-security" class="section" aria-labelledby="security-heading">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title" id="security-heading">Security Posture</h2>
+                        <p class="section-desc">Real-time security risk assessment and threat intelligence</p>
+                    </div>
+                </div>
+
+                <div class="security-grid">
+
+                    <!-- Risk Score -->
+                    <div class="card risk-card" aria-label="Security risk score widget">
+                        <h3 class="card-title">Risk Score</h3>
+                        <div class="risk-wrap">
+                            <svg class="risk-svg" viewBox="0 0 120 120" aria-hidden="true">
+                                <circle class="risk-track" cx="60" cy="60" r="48" />
+                                <circle class="risk-arc" cx="60" cy="60" r="48" id="risk-arc" stroke-dasharray="301.59"
+                                    stroke-dashoffset="301.59" />
+                            </svg>
+                            <div class="risk-center">
+                                <div class="risk-num" id="risk-num">—</div>
+                                <div class="risk-lbl">/ 100</div>
+                            </div>
+                        </div>
+                        <div class="risk-scale" aria-label="Risk scale legend">
+                            <span class="risk-scale-item risk-green">0–30 Low Risk</span>
+                            <span class="risk-scale-item risk-orange">31–70 Medium</span>
+                            <span class="risk-scale-item risk-red">71–100 High Risk</span>
+                        </div>
+                    </div>
+
+                    <!-- Threat Level -->
+                    <div class="card" aria-label="Threat level distribution">
+                        <h3 class="card-title">Threat Level</h3>
+                        <div class="threat-bars">
+                            <div class="threat-row">
+                                <span class="thr-lbl">Critical</span>
+                                <div class="thr-track">
+                                    <div class="thr-bar thr-bar--crit" id="thr-crit" style="width:0%"></div>
+                                </div>
+                                <span class="thr-cnt" id="thr-crit-cnt">0</span>
+                            </div>
+                            <div class="threat-row">
+                                <span class="thr-lbl">High</span>
+                                <div class="thr-track">
+                                    <div class="thr-bar thr-bar--high" id="thr-high" style="width:0%"></div>
+                                </div>
+                                <span class="thr-cnt" id="thr-high-cnt">0</span>
+                            </div>
+                            <div class="threat-row">
+                                <span class="thr-lbl">Medium</span>
+                                <div class="thr-track">
+                                    <div class="thr-bar thr-bar--med" id="thr-med" style="width:0%"></div>
+                                </div>
+                                <span class="thr-cnt" id="thr-med-cnt">0</span>
+                            </div>
+                            <div class="threat-row">
+                                <span class="thr-lbl">Low</span>
+                                <div class="thr-track">
+                                    <div class="thr-bar thr-bar--low" id="thr-low" style="width:0%"></div>
+                                </div>
+                                <span class="thr-cnt" id="thr-low-cnt">0</span>
+                            </div>
+                        </div>
+                        <div class="threat-summary">
+                            <span class="badge badge--success" id="threat-overall-badge">MINIMAL</span>
+                            <p class="threat-summary-desc">No active threats detected. All scans passed.</p>
+                        </div>
+                    </div>
+
+                    <!-- Scan Results -->
+                    <div class="card" aria-label="Latest security scan results">
+                        <h3 class="card-title">Latest Scans</h3>
+                        <ul class="scan-list" id="scan-list" aria-label="Security scan results">
+                            <li class="scan-item">
+                                <div class="scan-dot scan-dot--pass" aria-label="Passed"><svg viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg></div>
+                                <div class="scan-info">
+                                    <div class="scan-name">Gitleaks — Secrets Scan</div>
+                                    <div class="scan-meta">0 secrets · Last push</div>
+                                </div>
+                                <span class="badge badge--success">Passed</span>
+                            </li>
+                            <li class="scan-item">
+                                <div class="scan-dot scan-dot--pass" aria-label="Passed"><svg viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg></div>
+                                <div class="scan-info">
+                                    <div class="scan-name">Trivy — Container CVE</div>
+                                    <div class="scan-meta">0 CVEs · Last push</div>
+                                </div>
+                                <span class="badge badge--success">Passed</span>
+                            </li>
+                            <li class="scan-item">
+                                <div class="scan-dot scan-dot--pass" aria-label="Passed"><svg viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg></div>
+                                <div class="scan-info">
+                                    <div class="scan-name">pip-audit — Dependency CVE</div>
+                                    <div class="scan-meta">0 vulnerabilities · Last push</div>
+                                </div>
+                                <span class="badge badge--success">Passed</span>
+                            </li>
+                            <li class="scan-item">
+                                <div class="scan-dot scan-dot--info" aria-label="Configured"><svg viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="12" y1="8" x2="12" y2="12" />
+                                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                                    </svg></div>
+                                <div class="scan-info">
+                                    <div class="scan-name">SonarCloud — Code Quality</div>
+                                    <div class="scan-meta">Non-blocking · Configured</div>
+                                </div>
+                                <span class="badge badge--info">Configured</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ── PIPELINES ─────────────────────────────── -->
+            <section id="sec-pipeline" class="section" aria-labelledby="pipeline-heading">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title" id="pipeline-heading">Deployment Pipelines</h2>
+                        <p class="section-desc">CI/CD pipeline stages and execution status</p>
+                    </div>
+                    <span class="badge badge--info" id="pipeline-count-badge">Loading…</span>
+                </div>
+                <div class="pipeline-list" id="pipeline-list" aria-label="Pipeline list">
+                    <div class="skel-card">
+                        <div class="skel skel--short"></div>
+                        <div class="skel skel--long"></div>
+                    </div>
+                    <div class="skel-card">
+                        <div class="skel skel--short"></div>
+                        <div class="skel skel--long"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── COMPONENTS ────────────────────────────── -->
+            <section id="sec-components" class="section" aria-labelledby="components-heading">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title" id="components-heading">DevSecOps Components</h2>
+                        <p class="section-desc">Integrated toolchain status and configuration</p>
+                    </div>
+                    <div class="filter-group" role="group" aria-label="Filter components by status">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="active">Active</button>
+                        <button class="filter-btn" data-filter="configured">Configured</button>
+                        <button class="filter-btn" data-filter="ready">Ready</button>
+                    </div>
+                </div>
+                <div class="components-grid" id="components-list" aria-label="Components list">
+                    <div class="skel-card">
+                        <div class="skel skel--short"></div>
+                        <div class="skel skel--long"></div>
+                    </div>
+                    <div class="skel-card">
+                        <div class="skel skel--short"></div>
+                        <div class="skel skel--long"></div>
+                    </div>
+                    <div class="skel-card">
+                        <div class="skel skel--short"></div>
+                        <div class="skel skel--long"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── API ENDPOINTS ─────────────────────────── -->
+            <section id="sec-endpoints" class="section" aria-labelledby="endpoints-heading">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title" id="endpoints-heading">API Endpoints</h2>
+                        <p class="section-desc">Live endpoint registry — click path to open, copy URL to clipboard</p>
+                    </div>
+                    <div class="ep-search-wrap">
+                        <svg class="ep-search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        <input class="ep-search" id="ep-search" type="search" placeholder="Filter endpoints…"
+                            aria-label="Search and filter endpoints">
+                        <span class="ep-count-badge" id="ep-count">—</span>
+                    </div>
+                </div>
+
+                <div class="ep-console" role="region" aria-label="Endpoint console">
+                    <div class="ep-console-bar" aria-hidden="true">
+                        <span class="dot dot--red"></span>
+                        <span class="dot dot--yellow"></span>
+                        <span class="dot dot--green"></span>
+                        <span class="ep-console-label">Live Endpoint Registry</span>
+                    </div>
+                    <ul class="ep-list" id="ep-list" aria-label="API endpoint list"></ul>
+                </div>
+            </section>
+
+            <!-- ── COMPLIANCE ─────────────────────────────── -->
+            <section id="sec-compliance" class="section" aria-labelledby="compliance-heading">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title" id="compliance-heading">Compliance &amp; Standards</h2>
+                        <p class="section-desc">Automated control coverage for industry frameworks</p>
+                    </div>
+                </div>
+                <div class="compliance-grid" aria-label="Compliance frameworks">
+                    <div class="compliance-card">
+                        <div class="compliance-top">
+                            <span class="compliance-icon" aria-hidden="true">🔒</span>
+                            <div>
+                                <div class="compliance-name">OWASP DevSecOps</div>
+                                <div class="compliance-sub">Maturity Model Level 2</div>
+                            </div>
+                            <span class="badge badge--success">Passing</span>
+                        </div>
+                        <div class="compliance-bar-wrap" role="progressbar" aria-valuenow="78" aria-valuemin="0"
+                            aria-valuemax="100" aria-label="78% controls implemented">
+                            <div class="compliance-bar" style="width:78%"></div>
+                        </div>
+                        <div class="compliance-foot">78% controls implemented</div>
+                    </div>
+                    <div class="compliance-card">
+                        <div class="compliance-top">
+                            <span class="compliance-icon" aria-hidden="true">📋</span>
+                            <div>
+                                <div class="compliance-name">CIS Controls</div>
+                                <div class="compliance-sub">v8 Implementation Group 1</div>
+                            </div>
+                            <span class="badge badge--success">Passing</span>
+                        </div>
+                        <div class="compliance-bar-wrap" role="progressbar" aria-valuenow="85" aria-valuemin="0"
+                            aria-valuemax="100" aria-label="85% controls implemented">
+                            <div class="compliance-bar" style="width:85%"></div>
+                        </div>
+                        <div class="compliance-foot">85% controls implemented</div>
+                    </div>
+                    <div class="compliance-card">
+                        <div class="compliance-top">
+                            <span class="compliance-icon" aria-hidden="true">🛡️</span>
+                            <div>
+                                <div class="compliance-name">NIST SSDF</div>
+                                <div class="compliance-sub">Secure Software Development</div>
+                            </div>
+                            <span class="badge badge--warning">Partial</span>
+                        </div>
+                        <div class="compliance-bar-wrap" role="progressbar" aria-valuenow="62" aria-valuemin="0"
+                            aria-valuemax="100" aria-label="62% practices implemented">
+                            <div class="compliance-bar compliance-bar--warn" style="width:62%"></div>
+                        </div>
+                        <div class="compliance-foot">62% practices implemented</div>
+                    </div>
+                    <div class="compliance-card">
+                        <div class="compliance-top">
+                            <span class="compliance-icon" aria-hidden="true">📦</span>
+                            <div>
+                                <div class="compliance-name">Container Security</div>
+                                <div class="compliance-sub">Docker CIS Benchmark</div>
+                            </div>
+                            <span class="badge badge--success">Passing</span>
+                        </div>
+                        <div class="compliance-bar-wrap" role="progressbar" aria-valuenow="91" aria-valuemin="0"
+                            aria-valuemax="100" aria-label="91% controls implemented">
+                            <div class="compliance-bar" style="width:91%"></div>
+                        </div>
+                        <div class="compliance-foot">91% controls implemented</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── ACTIVITY LOG ───────────────────────────── -->
+            <section id="sec-activity" class="section" aria-labelledby="activity-heading">
+                <div class="section-head">
+                    <div>
+                        <h2 class="section-title" id="activity-heading">Activity Log</h2>
+                        <p class="section-desc">Real-time system event stream</p>
+                    </div>
+                    <button class="btn-secondary" onclick="clearActivityLog()"
+                        aria-label="Clear all activity log entries">Clear Log</button>
+                </div>
+                <div class="activity-panel" role="log" aria-live="polite" aria-label="Activity log">
+                    <div class="activity-list" id="activity-list"></div>
+                </div>
+            </section>
+
+        </main><!-- /page-content -->
+
+        <footer class="page-footer" role="contentinfo">
+            <div class="footer-left">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                <span>Secured by DevSecOps Best Practices</span>
+            </div>
+            <div class="footer-pills" aria-label="Technology stack">
+                <a class="tech-pill" href="https://flask.palletsprojects.com/" target="_blank"
+                    rel="noopener noreferrer">Flask</a>
+                <a class="tech-pill" href="https://www.docker.com/" target="_blank" rel="noopener noreferrer">Docker</a>
+                <a class="tech-pill" href="https://kubernetes.io/" target="_blank"
+                    rel="noopener noreferrer">Kubernetes</a>
+                <a class="tech-pill" href="https://github.com/features/actions" target="_blank"
+                    rel="noopener noreferrer">GitHub Actions</a>
+                <a class="tech-pill" href="https://trivy.dev/" target="_blank" rel="noopener noreferrer">Trivy</a>
+                <a class="tech-pill" href="https://sonarcloud.io/" target="_blank"
+                    rel="noopener noreferrer">SonarCloud</a>
+            </div>
+        </footer>
+
+    </div><!-- /main-wrap -->
 
     <script src="script.js"></script>
 </body>
